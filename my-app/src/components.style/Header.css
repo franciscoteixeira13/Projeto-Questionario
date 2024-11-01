@@ -1,0 +1,23 @@
+@font-face {
+    font-family: 'PKFGlobalSans-Regular';
+    src: url('../fonts/PKFGlobalSans-Regular.otf') format('truetype');
+}
+
+.PKF-Header{
+
+    display: inline;
+
+}
+.logo{
+    
+    width: 50vw;
+    
+
+}
+.imagemlogo{
+
+    width: 140px;
+    height: 80px;
+    
+}
+

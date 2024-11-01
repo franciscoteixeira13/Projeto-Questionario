@@ -1,0 +1,117 @@
+@font-face {
+    font-family: 'PKFGlobalSans-Regular';
+    src: url('../fonts/PKFGlobalSans-Regular.otf') format('truetype');
+}
+
+.Container{
+
+    width: 100%;
+    height: 400px;
+    margin-left: 0px;
+    padding: 0;
+    
+    margin-right: auto;
+    margin-left: auto;
+    background-color: #f2efe7;
+
+}
+.row{
+    
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+   
+
+}   
+.logo{
+
+    width: auto;
+
+}
+.FooterMenu{
+    
+    width: 100%;
+
+}
+
+
+.PKF-Footer img{
+    
+    width: 200px;
+    height: 110px;
+    
+}
+
+.menu{
+
+    margin-top: 50px;
+    margin-left: 150px;
+    width: 100%;
+    display: flex;
+
+    
+}
+
+.PKF-Footer h5{
+    
+    text-align: left;
+    font-size: 1rem;
+    font-family: 'PKFGlobalSans-Regular', sans-serif;
+    color: #0f3780;
+}
+
+.PKF-Footer a{
+    color: #212529;
+    font-family: 'PKFGlobalSans-Regular', sans-serif;
+    margin: 0px;
+    padding: 0px;
+    font-weight: 400;
+    font-size: 18px;
+    
+    list-style-type: none;
+    text-align: left;
+    font-size: 18px;
+}
+
+.PKF-Footer a:hover{
+    
+    color: #007bff;
+
+}
+
+.PKF-Footer ul{
+    
+    list-style-type: none;
+    
+}
+
+.lists{
+    
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    align-content: center;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex: 1 1 200px;
+    padding: 0px;
+    border-radius: 5px;
+    margin: 0;
+    gap: 10px;
+
+}
+
+.list{
+    
+    margin-left: 50px;
+    
+    
+}
+
+
+
+.rights-reserved{
+    
+    font-family: 'PKFGlobalSans-Regular', sans-serif;
+
+}

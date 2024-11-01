@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'PKFGlobalSans-Regular';
+    src: url('../fonts/PKFGlobalSans-Regular.otf') format('truetype');
+}
+
+.a{
+
+    width: 10px;
+    height: 10px;
+    margin-left: 5px;
+    margin-top: 5px;
+    
+}
