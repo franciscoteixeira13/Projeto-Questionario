@@ -84,6 +84,7 @@ const Survey = ({ userInfo }) => {
     if (currentQuestionIndex >= questions.length) {
         return (
             <div>
+                <h1></h1>
                 <h2>Obrigado por completar a pesquisa!</h2>
                 <h3>Suas Respostas:</h3>
                 <ul>

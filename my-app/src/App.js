@@ -12,7 +12,7 @@ function App() {
         <div>
 
             <div className="container">
-                <h1>Welcome to the Survey</h1>
+                <h1>Questionário</h1>
                 {userInfo ? (
                     <Survey userInfo={userInfo} />
                 ) : (
