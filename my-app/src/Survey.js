@@ -1,11 +1,13 @@
-
-import React, { useEffect, useState } from 'react';
+import './Survey.css'
+import React, { useEffect, useState, useContext  } from 'react';
 import * as XLSX from 'xlsx';
 import Footer from './components/Footer';
+import ThemeContext from './ThemeContext';
 
 import './'
 
 const Survey = ({ userInfo }) => {
+    const {theme, toggleTheme } = useContext(ThemeContext);
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(11);
     const [additionalInfo,setAdditionalInfo] = useState([])
@@ -98,6 +100,7 @@ const Survey = ({ userInfo }) => {
     const currentAdditionalInfo = additionalInfo[currentQuestionIndex]
     return (
         <div>
+           
             <div className="survey-container">
                 <h2>{questions[currentQuestionIndex]}</h2>
                 <textarea

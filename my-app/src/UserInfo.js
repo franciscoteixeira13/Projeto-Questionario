@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import './UserInfo.css'
+
 
 const UserInfo = ({ setUserInfo }) => {
     const [name, setName] = useState('');
@@ -18,9 +20,9 @@ const UserInfo = ({ setUserInfo }) => {
 
     return (
         <form onSubmit={handleSubmit}>
-            <div className="form-group">
+            <div className="dados-entrevistado">
                 <label htmlFor="name">Seu Nome:</label>
-                <input
+                <input 
                     type="text"
                     id="name"
                     value={name}
@@ -28,7 +30,7 @@ const UserInfo = ({ setUserInfo }) => {
                     required
                 />
             </div>
-            <div className="form-group">
+            <div className="dados-entrevistado">
                 <label htmlFor="jobTitle">Sua Função na Empresa:</label>
                 <input
                     type="text"
@@ -38,7 +40,7 @@ const UserInfo = ({ setUserInfo }) => {
                     required
                 />
             </div>
-            <div className="form-group">
+            <div className="dados-entrevistado">
                 <label htmlFor="location">Introduza a Localização da qual está a responder:</label>
                 <input
                     type="text"
@@ -48,7 +50,7 @@ const UserInfo = ({ setUserInfo }) => {
                     required
                 />
             </div>
-            <div className="form-group">
+            <div className="dados-entrevistado">
                 <label htmlFor="functionalArea">Área Funcional(qualificação):</label>
                 <input
                     type="text"

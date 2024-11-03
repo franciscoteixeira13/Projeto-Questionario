@@ -1,4 +1,10 @@
 @font-face {
     font-family: 'PKFGlobalSans-Regular';
-    src: url('../fonts/PKFGlobalSans-Regular.otf') format('truetype');
+    src: url('./fonts/PKFGlobalSans-Regular.otf') format('truetype');
+}
+
+.textarea{
+
+    width: 100px;
+
 }
