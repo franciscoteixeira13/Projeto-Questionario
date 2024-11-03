@@ -1,0 +1,74 @@
+
+
+.pergunta-revisao{
+
+    margin-top: 20px;
+
+}
+
+
+
+.pergunta{
+
+    font-size: 18px;
+
+}
+
+.resposta{
+
+    font-size: 18px;
+
+}
+
+.survey-summary {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    
+}
+
+.survey-summary h2 {
+    color: #036ddd;
+    margin-bottom: 20px;
+}
+
+.survey-summary h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.survey-summary ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.survey-summary li {
+    text-align: left;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #ccc; 
+}
+
+.survey-summary li strong {
+    color: #333;
+}
+
+.survey-summary button {
+    padding: 10px 20px;
+    padding: 8px 12px;
+    height: 40px;
+    margin-right: 10px; /* Margem entre os botões */
+    font-size: 16px;
+   
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+}
+
+.survey-summary button:hover {
+    background-color: #0056b3;
+}

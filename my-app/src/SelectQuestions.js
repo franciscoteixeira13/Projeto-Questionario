@@ -109,7 +109,7 @@ const SelectQuestions = () => {
                     );
                 })
             )}
-            <button className="start-survey-button"  onClick={startSurvey}>Iniciar Pesquisa</button>
+            <button className="start-survey-button"  onClick={startSurvey}>Iniciar Questionário</button>
         </div>
     );
 };

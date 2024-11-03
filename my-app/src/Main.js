@@ -4,12 +4,10 @@ import Footer from './components/Footer'
 import './Main.css'
 import { useState } from 'react';
 import Questionario from './Survey';
-import Chat from './Chat'
 import About from './about'
 
 import App from './App'
 import {BrowserRouter, Routes, Route } from 'react-router-dom';
-import Chat1 from './Chat1';
 export default function Main() {
   
 

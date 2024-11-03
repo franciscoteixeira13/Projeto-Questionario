@@ -23,8 +23,11 @@ const UserInfo = ({ setUserInfo }) => {
     return (
         <form onSubmit={handleSubmit}>
             <div className="dados-entrevistado">
+                
                 <label htmlFor="name">Seu Nome:</label>
                 <input 
+                    minLength='3'
+                    maxLength='100'
                     type="text"
                     id="name"
                     value={name}
@@ -35,6 +38,8 @@ const UserInfo = ({ setUserInfo }) => {
             <div className="dados-entrevistado">
                 <label htmlFor="jobTitle">Sua Função na Empresa:</label>
                 <input
+                    minLength='5'
+                    maxLength='40'
                     type="text"
                     id="jobTitle"
                     value={jobTitle}
@@ -45,6 +50,8 @@ const UserInfo = ({ setUserInfo }) => {
             <div className="dados-entrevistado">
                 <label htmlFor="location">Introduza a Localização da qual está a responder:</label>
                 <input
+                    minLength='3'
+                    maxLength='40'
                     type="text"
                     id="location"
                     value={location}
@@ -55,6 +62,8 @@ const UserInfo = ({ setUserInfo }) => {
             <div className="dados-entrevistado">
                 <label htmlFor="functionalArea">Área Funcional(qualificação):</label>
                 <input
+                    minLength='3'
+                    maxLength='70'
                     type="text"
                     id="functionalArea"
                     value={functionalArea}
@@ -62,7 +71,11 @@ const UserInfo = ({ setUserInfo }) => {
                     required
                 />
             </div>
-            <button type="submit">Iniciar Questionário</button>
+
+            <div className='Lastbutton'>
+                <button className='submit-button' type="submit">Iniciar Questionário</button>
+            </div>
+           
         </form>
     );
 };

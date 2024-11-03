@@ -1,5 +1,13 @@
+@font-face {
+    font-family: 'PKFGlobalSans-Regular'; /* Define a name for the font */
+    src: url('./fonts/PKFGlobalSans-Regular.otf') format('otf'); /* Adjust the path to your font file */
+         /* Provide multiple formats for compatibility */
+    font-weight: normal; /* You can define the weight */
+    font-style: normal; /* You can define the style */
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'PKFGlobalSans-Regular', sans-serif;
     background-color: var(--background-color);
     color: var(--text-color);
     margin: 0;
@@ -55,6 +63,3 @@ button {
     cursor: pointer;
 }
 
-button:hover {
-    background-color: #4cae4c;
-}

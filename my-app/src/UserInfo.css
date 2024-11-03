@@ -19,6 +19,31 @@ h2 {
 
 }
 
+.Lastbutton{
+
+    text-align: center; /* Centraliza o botão */
+    margin-top: 20px; /* Espaçamento opcional */
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+}
+
+.submit-button{
+
+    padding: 10px 20px;
+    padding: 8px 12px;
+    height: 40px;
+    margin-right: 10px; /* Margem entre os botões */
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007BFF;
+    color: white;
+    cursor: pointer;
+
+}
+
 input[type="text"],
 input[type="email"],
 textarea {

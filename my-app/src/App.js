@@ -4,6 +4,7 @@ import ThemeProvider, { ThemeContext } from './ThemeContext'; // Correção na i
 import UserInfo from './UserInfo';
 import Survey from './Survey';
 import SelectQuestions from './SelectQuestions';
+import SurveySummary from './SurveySummary';
 import './styles.css';
 import Footer from './components/Footer';
 
@@ -17,15 +18,14 @@ function App() {
                 <ThemeContext.Consumer>
                     {({ theme, toggleTheme }) => (
                         <div className={theme}>
-                            <button onClick={toggleTheme}>
-                                Alternar para o modo {theme === 'light' ? 'escuro' : 'claro'}
-                            </button>
+                            
                             <div className="container">
                                 <h1>Questionário</h1>
                                 <Routes>
                                     <Route path="/" element={userInfo ? <SelectQuestions onStartSurvey={setSelectedQuestions} /> : <UserInfo setUserInfo={setUserInfo} />} />
                                     <Route path="/select-questions" element={<SelectQuestions onStartSurvey={setSelectedQuestions} />} />
                                     <Route path="/survey" element={<Survey selectedQuestions={selectedQuestions} userInfo={userInfo} />} />
+                                    <Route path="/survey-summary" element={<SurveySummary />} />
                                 </Routes>
                             </div>
                             <Footer />
