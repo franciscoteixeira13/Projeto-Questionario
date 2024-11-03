@@ -17,7 +17,7 @@
 }
 .row{
     
-    display: -ms-flexbox;
+    width: 100;
     display: flex;
     -ms-flex-wrap: wrap;
    
@@ -31,7 +31,7 @@
 .FooterMenu{
     
     width: 100%;
-
+    
 }
 
 
@@ -67,7 +67,7 @@
     padding: 0px;
     font-weight: 400;
     font-size: 18px;
-    
+    text-decoration: none;
     list-style-type: none;
     text-align: left;
     font-size: 18px;
@@ -81,9 +81,22 @@
 
 .PKF-Footer ul{
     
-    list-style-type: none;
+    min-width: 200px;
+    max-width: 25%;
+    padding-left: 0;
     
 }
+
+.PKF-Footer li{
+
+    list-style-type: none;
+    
+    margin: 0;
+    line-height: 2em;
+
+}
+
+
 
 .lists{
     

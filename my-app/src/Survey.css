@@ -3,8 +3,74 @@
     src: url('./fonts/PKFGlobalSans-Regular.otf') format('truetype');
 }
 
-.textarea{
+:root {
+    --background-color-light: #ffffff;
+    --text-color-light: #333;
+    --button-color-light: #5cb85c;
+    --button-hover-light: #4cae4c;
 
+    --background-color-dark: #1e1e1e;
+    --text-color-dark: #ffffff;
+    --button-color-dark: #007b7f;
+    --button-hover-dark: #005f5f;
+}
+
+[data-theme="light"] {
+    --background-color: var(--background-color-light);
+    --text-color: var(--text-color-light);
+    --button-color: var(--button-color-light);
+    --button-hover: var(--button-hover-light);
+}
+
+[data-theme="dark"] {
+    --background-color: var(--background-color-dark);
+    --text-color: var(--text-color-dark);
+    --button-color: var(--button-color-dark);
+    --button-hover: var(--button-hover-dark);
+}
+
+.survey-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h2 {
+    color: var(--text-color);
+    margin-bottom: 20px;
+}
+
+.input {
     width: 100px;
+}
 
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    resize: none;
+    margin-bottom: 10px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: var(--button-color);
+    color: var(--text-color-dark);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: var(--button-hover);
 }

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import './UserInfo.css'
-
+import { useNavigate } from 'react-router-dom';
+import './UserInfo.css';
 
 const UserInfo = ({ setUserInfo }) => {
     const [name, setName] = useState('');
     const [jobTitle, setJobTitle] = useState('');
     const [location, setLocation] = useState('');
     const [functionalArea, setFunctionalArea] = useState('');
+    const navigate = useNavigate(); // Hook para navegação
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -16,6 +17,7 @@ const UserInfo = ({ setUserInfo }) => {
             location,
             functionalArea,
         });
+        navigate('/select-questions'); // Redireciona para o componente de seleção de perguntas
     };
 
     return (
