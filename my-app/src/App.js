@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ThemeProvider, { ThemeContext } from './ThemeContext'; // Correção na importação
 import UserInfo from './UserInfo';
 import Survey from './Survey';
 import SelectQuestions from './SelectQuestions';
 import SurveySummary from './SurveySummary';
+import ThemeProvider, { ThemeContext } from './ThemeContext';
 import './styles.css';
 import Footer from './components/Footer';
 
@@ -34,6 +34,7 @@ function App() {
                 </ThemeContext.Consumer>
             </Router>
         </ThemeProvider>
+       
     );
 }
 

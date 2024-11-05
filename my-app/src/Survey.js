@@ -46,6 +46,7 @@ const Survey = () => {
         const now = new Date();
 
         const submissionData = {
+            
             user: userInfo,
             Data:  `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`, // Current date and time
             Normas_aplicaveis: selectedQuestions.map(q => q.normasAplicaveis).join(', '),
