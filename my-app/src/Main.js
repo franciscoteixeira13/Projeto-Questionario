@@ -7,8 +7,9 @@ export default function Main() {
   
 return (
     <>
-    <div >
-      <h1>Painel de Entrevistas</h1>
+    <div>
+
+      <h1>Painel de Entrevista - CCAM Leiria</h1>
       
       <App />
       

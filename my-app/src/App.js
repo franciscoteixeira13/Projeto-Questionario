@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import UserInfo from './UserInfo';
 import Survey from './Survey';
 import SelectQuestions from './SelectQuestions';
@@ -12,6 +13,28 @@ function App() {
     const [userInfo, setUserInfo] = useState(null);
     const [selectedQuestions, setSelectedQuestions] = useState([]);
 
+    const Title = () => {
+        const location = useLocation(); // Captura a localização atual
+    
+        // Função para determinar o título com base na rota atual
+        const getTitle = () => {
+            if (location.pathname === '/') {
+                return 'Informações Pessoais';
+            } else if (location.pathname === '/select-questions') {
+                return 'Selecionar Questões';
+            } else if (location.pathname === '/survey') {
+                return 'Questionário - CCAM Leiria';
+            } else if (location.pathname === '/survey-summary') {
+                return 'Resumo do Seu Questionário';
+            } else {
+                return ''; // Para rotas não definidas, retorne uma string vazia
+            }
+        };
+    
+        return <h1>{getTitle()}</h1>; // Renderiza o título
+    };
+
+
     return (
         <ThemeProvider>
             <Router>
@@ -20,7 +43,7 @@ function App() {
                         <div className={theme}>
                             
                             <div className="container">
-                                <h1>Questionário</h1>
+                                <Title />
                                 <Routes>
                                     <Route path="/" element={userInfo ? <SelectQuestions onStartSurvey={setSelectedQuestions} /> : <UserInfo setUserInfo={setUserInfo} />} />
                                     <Route path="/select-questions" element={<SelectQuestions onStartSurvey={setSelectedQuestions} />} />

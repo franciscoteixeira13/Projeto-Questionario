@@ -11,13 +11,14 @@
 .pergunta{
 
     font-size: 18px;
+    
 
 }
 
 .resposta{
 
     font-size: 18px;
-
+    margin-top: 20px;
 }
 
 .survey-summary {

@@ -10,7 +10,7 @@ const Survey = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [responses, setResponses] = useState(Array(selectedQuestions.length).fill(''));
     const [comments, setComments] = useState(Array(selectedQuestions.length).fill(''));
-    const [expandedInfo, setExpandedInfo] = useState({});
+    const [expandedInfo, setExpandedInfo] = useState({}); // Estado para controlar a expansão das informações adicionais
 
     const handleNextQuestion = () => {
         // Avança para a próxima pergunta ou, se for a última, submete o formulário
@@ -38,28 +38,29 @@ const Survey = () => {
     const toggleInfo = (id) => {
         setExpandedInfo(prev => ({
             ...prev,
-            [id]: !prev[id],
+            [id]: !prev[id], // Alterna o estado de expansão para a pergunta específica
         }));
     };
 
     const handleSubmit = () => {
         const now = new Date();
-
         const submissionData = {
-            
             user: userInfo,
-            Data:  `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`, // Current date and time
-            Normas_aplicaveis: selectedQuestions.map(q => q.normasAplicaveis).join(', '),
-            Indice_Pergunta: selectedQuestions.map(q => q.id).join(', '),
-            Ambito: selectedQuestions.map(q => q.âmbito).join(', '),
-            Pergunta: selectedQuestions.map(q => q.pergunta).join(', '),
-            Resposta: responses.join(', '),
-            Comentarios: comments.join(', '),
-        
+            responses: responses.map((resp, index) => ({
+                Data: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
+                Normas_aplicaveis: selectedQuestions[index].normasAplicaveis,
+                Indice_Pergunta: selectedQuestions[index].id,
+                Ambito: selectedQuestions[index].âmbito,
+                Pergunta: selectedQuestions[index].pergunta,
+                Resposta: responses[index],
+                Comentarios: comments[index]
+            }))
         };
-    
+
+
+
         console.log('Dados a serem enviados:', submissionData);
-    
+
         fetch('http://localhost:4000/api/survey', {
             method: 'POST',
             headers: {
@@ -77,7 +78,6 @@ const Survey = () => {
         })
         .then((data) => {
             console.log('Dados enviados com sucesso:', data);
-            // Pass relevant data to the next page
             navigate('/survey-summary', { state: { selectedQuestions, responses, comments } });
         })
         .catch((error) => {
@@ -103,6 +103,9 @@ const Survey = () => {
             </div>
         );
     }
+
+    // ID da pergunta atual para o toggle
+    const currentQuestionId = selectedQuestions[currentQuestionIndex].id;
 
     return (
         <div>
@@ -139,11 +142,11 @@ const Survey = () => {
             />
 
             <div className='informacoes-adicionais'>
-                <button className='informacoes-button' onClick={() => toggleInfo(selectedQuestions[currentQuestionIndex].id)} style={{ cursor: 'pointer' }}>
-                    {expandedInfo[selectedQuestions[currentQuestionIndex].id] ? '▲' : '▼'} Informações Adicionais
+                <button className='informacoes-button' onClick={() => toggleInfo(currentQuestionId)} style={{ cursor: 'pointer' }}>
+                    {expandedInfo[currentQuestionId] ? '▲' : '▼'} Informações Adicionais
                 </button>
             </div>
-            {expandedInfo[selectedQuestions[currentQuestionIndex].id] && (
+            {expandedInfo[currentQuestionId] && (
                 <ul className='question-details'>
                     <li><strong>Normas Aplicáveis:</strong> {selectedQuestions[currentQuestionIndex].normasAplicaveis || 'N/A'}</li>
                     <li><strong>Índice da Pergunta:</strong> {selectedQuestions[currentQuestionIndex].id}</li>
