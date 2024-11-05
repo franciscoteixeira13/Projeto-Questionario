@@ -1,13 +1,6 @@
 import React from 'react';
-import Header from './components/Header'
-import Footer from './components/Footer'
 import './Main.css'
-import { useState } from 'react';
-import Questionario from './Survey';
-import About from './about'
-
 import App from './App'
-import {BrowserRouter, Routes, Route } from 'react-router-dom';
 export default function Main() {
 
 

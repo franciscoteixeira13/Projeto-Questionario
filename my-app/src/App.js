@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ThemeProvider, { ThemeContext } from './ThemeContext'; // Correção na importação
 import UserInfo from './UserInfo';

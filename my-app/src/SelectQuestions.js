@@ -26,7 +26,7 @@ const SelectQuestions = () => {
                     pergunta: row[header.indexOf('Pergunta')],
                     âmbito: row[header.indexOf('âmbito')],
                     id: row[header.indexOf('Indice Pergunta')],
-                    normasAplicaveis: row[header.indexOf('Normas aplicaveis')]
+                    normasAplicaveis: row[header.indexOf('Normas_aplicavel')]
                 }));
 
                 setQuestionsData(perguntas);

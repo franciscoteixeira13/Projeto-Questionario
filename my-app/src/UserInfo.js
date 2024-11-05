@@ -22,7 +22,7 @@ const UserInfo = ({ setUserInfo }) => {
 
         // Armazena as informações do usuário
         setUserInfo(userInfo);
-        alert(JSON.stringify(userInfo))
+        
          // Limpa os campos do formulário
          
 

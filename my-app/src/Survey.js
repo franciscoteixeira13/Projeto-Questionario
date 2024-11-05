@@ -43,15 +43,18 @@ const Survey = () => {
     };
 
     const handleSubmit = () => {
+        const now = new Date();
+
         const submissionData = {
             user: userInfo,
-            Data:  `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`; // Current date and time
+            Data:  `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`, // Current date and time
             Normas_aplicaveis: selectedQuestions.map(q => q.normasAplicaveis).join(', '),
             Indice_Pergunta: selectedQuestions.map(q => q.id).join(', '),
             Ambito: selectedQuestions.map(q => q.âmbito).join(', '),
             Pergunta: selectedQuestions.map(q => q.pergunta).join(', '),
             Resposta: responses.join(', '),
             Comentarios: comments.join(', '),
+        
         };
     
         console.log('Dados a serem enviados:', submissionData);
