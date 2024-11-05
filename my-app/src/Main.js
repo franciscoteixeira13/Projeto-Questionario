@@ -9,7 +9,6 @@ import About from './about'
 import App from './App'
 import {BrowserRouter, Routes, Route } from 'react-router-dom';
 export default function Main() {
-  
 
 
 /* const Home = ({ setKey }) => {

@@ -7,23 +7,33 @@ const UserInfo = ({ setUserInfo }) => {
     const [jobTitle, setJobTitle] = useState('');
     const [location, setLocation] = useState('');
     const [functionalArea, setFunctionalArea] = useState('');
-    const navigate = useNavigate(); // Hook para navegação
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setUserInfo({
+        
+        // Cria o objeto userInfo
+        const userInfo = {
             name,
             jobTitle,
             location,
             functionalArea,
-        });
-        navigate('/select-questions'); // Redireciona para o componente de seleção de perguntas
+        };
+
+        // Armazena as informações do usuário
+        setUserInfo(userInfo);
+        alert(JSON.stringify(userInfo))
+         // Limpa os campos do formulário
+         
+
+        // Navega para o próximo componente
+        navigate('/select-questions', { state: { userInfo } }); // Passa userInfo no estado
+        
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <div className="dados-entrevistado">
-                
                 <label htmlFor="name">Seu Nome:</label>
                 <input 
                     minLength='3'
@@ -75,7 +85,6 @@ const UserInfo = ({ setUserInfo }) => {
             <div className='Lastbutton'>
                 <button className='submit-button' type="submit">Iniciar Questionário</button>
             </div>
-           
         </form>
     );
 };

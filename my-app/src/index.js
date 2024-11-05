@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import Main from './Main';
 import reportWebVitals from './reportWebVitals';
-import { BrowserRouter, Router } from 'react-router-dom';
 import { ThemeProvider } from './ThemeContext';
 
 /* import Questionario from './components/Questionario'; */
