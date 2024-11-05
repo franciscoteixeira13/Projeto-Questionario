@@ -54,6 +54,18 @@ const SelectQuestions = () => {
         }));
     };
 
+    const handleScopeCheckboxChange = (scope) => {
+        const questionsInScope = questionsData.filter(q => q.âmbito === scope);
+        const areAllSelected = questionsInScope.every(q => selectedQuestions[q.id]);
+
+        const newSelectedQuestions = { ...selectedQuestions };
+        questionsInScope.forEach(q => {
+            newSelectedQuestions[q.id] = !areAllSelected; // Se todos estão selecionados, desmarque-os, caso contrário, marque-os
+        });
+
+        setSelectedQuestions(newSelectedQuestions);
+    };
+
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
         navigate('/survey', { state: { selectedQuestions: selectedQuestionsList, userInfo } }); // Passa userInfo
@@ -77,7 +89,7 @@ const SelectQuestions = () => {
 
     return (
         <div>
-            <h1 className="select-questions-container">Selecione as Perguntas para Responder</h1>
+            <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
             {Object.keys(filteredGroupedQuestions).length === 0 ? (
                 <p>Não há perguntas disponíveis.</p>
             ) : (
@@ -87,6 +99,12 @@ const SelectQuestions = () => {
                     return (
                         <div className="scope-container" key={scope}>
                             <h2 className="scope-title" onClick={() => toggleScope(scope)} style={{ cursor: 'pointer' }}>
+                                <input 
+                                    type="checkbox" 
+                                    className='scope-checkbox' 
+                                    checked={questionsInScope.every(q => selectedQuestions[q.id])}
+                                    onChange={() => handleScopeCheckboxChange(scope)} 
+                                />
                                 {scope} {expandedScopes[scope] ? '▲' : '▼'}
                             </h2>
                             {expandedScopes[scope] && (
