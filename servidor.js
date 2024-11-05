@@ -38,7 +38,7 @@ app.post('/api/survey', (req, res) => {
     console.log('Dados recebidos:', req.body); // Verifica os dados recebidos
 
     // Acessando valores do usuário do req.body
-    const { user, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios } = req.body;
+    const { user, responses = [] } = req.body; // Supondo que você agora está enviando um array de respostas
 
     // Inserindo os dados do usuário na tabela correspondente
     const userSql = 'INSERT INTO entrevistados (name, jobtitle, location, functional_area) VALUES (?, ?, ?, ?)';
@@ -53,22 +53,38 @@ app.post('/api/survey', (req, res) => {
         // Obtendo o ID do usuário inserido
         const userId = userResult.insertId;
 
-        // Agora, inserindo as informações do questionário
-        const surveySql = 'INSERT INTO questionario (user_id, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        const surveyValues = [userId, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios];
+        // Array para armazenar as promessas de inserção
+        const insertPromises = responses.map(response => {
+            const { Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios } = response;
 
-        connection.query(surveySql, surveyValues, (err, surveyResult) => {
-            if (err) {
-                console.error('Erro ao inserir dados do questionário: ' + err.stack);
-                return res.status(500).json({ error: 'Erro ao inserir dados do questionário' });
-            }
+            // Agora, inserindo as informações do questionário para cada resposta
+            const surveySql = 'INSERT INTO questionario (user_id, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+            const surveyValues = [userId, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios];
 
-            res.status(200).json({
-                message: 'Dados inseridos com sucesso',
-                userId: userId, // ID do usuário inserido
-                surveyId: surveyResult.insertId // ID do registro do questionário inserido
+            return new Promise((resolve, reject) => {
+                connection.query(surveySql, surveyValues, (err, surveyResult) => {
+                    if (err) {
+                        console.error('Erro ao inserir dados do questionário: ' + err.stack);
+                        return reject(err); // Se ocorrer um erro, rejeita a promessa
+                    }
+                    resolve(surveyResult.insertId); // Resolve a promessa com o ID do registro inserido
+                });
             });
         });
+
+        // Executa todas as promessas
+        Promise.all(insertPromises)
+            .then(surveyIds => {
+                res.status(200).json({
+                    message: 'Dados inseridos com sucesso',
+                    userId: userId, // ID do usuário inserido
+                    surveyIds: surveyIds // IDs dos registros do questionário inseridos
+                });
+            })
+            .catch(err => {
+                console.error('Erro ao inserir dados do questionário: ' + err.stack);
+                res.status(500).json({ error: 'Erro ao inserir dados do questionário' });
+            });
     });
 });
 
