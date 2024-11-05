@@ -7,13 +7,20 @@ const Survey = () => {
     const navigate = useNavigate();
     const { selectedQuestions, userInfo } = location.state || { selectedQuestions: [], userInfo: {} };
 
+    console.log('Perguntas recebidas:', selectedQuestions); // Log para depuração
+
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [responses, setResponses] = useState(Array(selectedQuestions.length).fill(''));
     const [comments, setComments] = useState(Array(selectedQuestions.length).fill(''));
-    const [expandedInfo, setExpandedInfo] = useState({}); // Estado para controlar a expansão das informações adicionais
+    const [expandedInfo, setExpandedInfo] = useState({});
 
     const handleNextQuestion = () => {
-        // Avança para a próxima pergunta ou, se for a última, submete o formulário
+
+        if (responses[currentQuestionIndex] === '') {
+            alert('Por favor, forneça uma resposta antes de continuar.'); // Alerta para o usuário
+            return; // Não avança se a resposta estiver vazia
+        }
+
         if (currentQuestionIndex === selectedQuestions.length - 1) {
             handleSubmit();
         } else {
@@ -38,7 +45,7 @@ const Survey = () => {
     const toggleInfo = (id) => {
         setExpandedInfo(prev => ({
             ...prev,
-            [id]: !prev[id], // Alterna o estado de expansão para a pergunta específica
+            [id]: !prev[id],
         }));
     };
 
@@ -56,8 +63,6 @@ const Survey = () => {
                 Comentarios: comments[index]
             }))
         };
-
-
 
         console.log('Dados a serem enviados:', submissionData);
 
@@ -86,25 +91,10 @@ const Survey = () => {
         });
     };
 
-    if (currentQuestionIndex >= selectedQuestions.length) {
-        return (
-            <div>
-                <h2>Obrigado por completar a pesquisa!</h2>
-                <h3>Suas Respostas:</h3>
-                <ul>
-                    {responses.map((resp, index) => (
-                        <li key={index}>
-                            {`${selectedQuestions[index].pergunta}: ${resp}`}
-                            <br />
-                            <strong>Comentário:</strong> {comments[index] || 'Nenhum comentário'}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-        );
+    if (currentQuestionIndex >= selectedQuestions.length || currentQuestionIndex < 0) {
+        return null; // Ou alguma mensagem de erro
     }
 
-    // ID da pergunta atual para o toggle
     const currentQuestionId = selectedQuestions[currentQuestionIndex].id;
 
     return (
@@ -176,7 +166,7 @@ const Survey = () => {
                         Voltar
                     </button>
                 )}
-                <button className='submit-button' onClick={handleNextQuestion}>
+                <button className='submit-button' type='submit' onClick={handleNextQuestion}>
                     {currentQuestionIndex < selectedQuestions.length - 1 ? 'Próxima Pergunta' : 'Enviar Formulário'}
                 </button>
             </div>

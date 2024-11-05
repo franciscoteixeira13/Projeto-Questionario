@@ -20,7 +20,6 @@ const SelectQuestions = () => {
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-
                 const header = json[0];
                 const perguntas = json.slice(1).map(row => ({
                     pergunta: row[header.indexOf('Pergunta')],
@@ -29,13 +28,21 @@ const SelectQuestions = () => {
                     normasAplicaveis: row[header.indexOf('Normas_aplicavel')]
                 }));
 
-                setQuestionsData(perguntas);
-
+                // Filtra as perguntas não vazias e inicializa selectedQuestions
                 const initialSelected = perguntas.reduce((acc, question) => {
-                    acc[question.id] = false;
+                    if (question.pergunta && question.pergunta.trim() !== '') {
+                        acc[question.id] = true; // Marca como selecionada se não estiver vazia
+                    } else {
+                        acc[question.id] = false; // Marca como não selecionada se estiver vazia
+                    }
                     return acc;
                 }, {});
-                setSelectedQuestions(initialSelected);
+
+                // Filtra para incluir apenas perguntas não vazias no questionsData
+                const filteredQuestions = perguntas.filter(q => q.pergunta && q.pergunta.trim() !== '');
+                
+                setQuestionsData(filteredQuestions); // Atualiza o estado com perguntas filtradas
+                setSelectedQuestions(initialSelected); // Atualiza o estado com perguntas selecionadas
             })
             .catch(error => console.error('Erro ao ler o arquivo Excel:', error));
     }, []);
@@ -68,6 +75,7 @@ const SelectQuestions = () => {
 
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
+        alert(JSON.stringify(selectedQuestions))
         navigate('/survey', { state: { selectedQuestions: selectedQuestionsList, userInfo } }); // Passa userInfo
     };
 

@@ -83,7 +83,7 @@ const UserInfo = ({ setUserInfo }) => {
             </div>
 
             <div className='Lastbutton'>
-                <button className='submit-button' type="submit">Iniciar Questionário</button>
+                <button className='submit-button'>Iniciar Questionário</button>
             </div>
         </form>
     );
