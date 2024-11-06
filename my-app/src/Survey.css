@@ -132,6 +132,12 @@ h2 {
     background-color: #0056b3;
 }
 
+.pergunta-text{
+
+    margin-left: 20px;
+
+}
+
 .response-input,
 .comment-input {
     width: 100%;

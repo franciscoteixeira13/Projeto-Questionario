@@ -15,7 +15,6 @@ const Survey = () => {
     const [expandedInfo, setExpandedInfo] = useState({});
 
     const handleNextQuestion = () => {
-
         if (responses[currentQuestionIndex] === '') {
             alert('Por favor, forneça uma resposta antes de continuar.'); // Alerta para o usuário
             return; // Não avança se a resposta estiver vazia
@@ -96,10 +95,12 @@ const Survey = () => {
     }
 
     const currentQuestionId = selectedQuestions[currentQuestionIndex].id;
+    const totalQuestions = selectedQuestions.length; // Total de perguntas
 
     return (
         <div>
-            <h2>{selectedQuestions[currentQuestionIndex].pergunta}</h2>
+            <h2>Pergunta {currentQuestionIndex + 1} de {totalQuestions}</h2>
+            <h3 className='pergunta-text'>{selectedQuestions[currentQuestionIndex].pergunta}</h3>
             <div className="option-buttons">
                 <button
                     className={`small-button ${responses[currentQuestionIndex] === 'Sim' ? 'selected' : ''}`}
