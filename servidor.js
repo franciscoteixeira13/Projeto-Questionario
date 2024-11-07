@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'Password@08vzT65',
-    database: 'projeto_questionario', // Certifique-se de usar o nome correto do seu banco de dados
+    database: 'projeto_questionario', 
     port: 3306
 });
 
