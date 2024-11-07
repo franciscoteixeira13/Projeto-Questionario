@@ -12,6 +12,7 @@ const SelectQuestions = () => {
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
 
+    //código para fazer a leitura do arquivo excel e guardá-lo nas variáveis para ser usado mais tarde
     useEffect(() => {
         fetch('/respostas_questionarios.xlsx')
             .then(response => response.arrayBuffer())
