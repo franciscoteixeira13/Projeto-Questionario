@@ -6,13 +6,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const SelectQuestions = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { userInfo } = location.state || {}; // Recebe userInfo do estado
+
+    const { userInfo, interviewerInfo } = location.state || {}; // Recebe userInfo e interviewerInfo do estado
 
     const [questionsData, setQuestionsData] = useState([]);
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
 
-    //código para fazer a leitura do arquivo excel e guardá-lo nas variáveis para ser usado mais tarde
     useEffect(() => {
         fetch('/respostas_questionarios.xlsx')
             .then(response => response.arrayBuffer())
@@ -26,22 +26,20 @@ const SelectQuestions = () => {
                     pergunta: row[header.indexOf('Pergunta')],
                     âmbito: row[header.indexOf('âmbito')],
                     id: row[header.indexOf('Indice Pergunta')],
-                    normasAplicaveis: row[header.indexOf('Normas_aplicavel')]
+                    normasAplicaveis: row[header.indexOf('Normas_aplicavel')],
                 }));
 
-                // Filtra as perguntas não vazias e inicializa selectedQuestions
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
-                        acc[question.id] = false; // Marca como selecionada se não estiver vazia
+                        acc[question.id] = false;
                     }
                     return acc;
                 }, {});
 
-                // Filtra para incluir apenas perguntas não vazias no questionsData
                 const filteredQuestions = perguntas.filter(q => q.pergunta && q.pergunta.trim() !== '');
 
-                setQuestionsData(filteredQuestions); // Atualiza o estado com perguntas filtradas
-                setSelectedQuestions(initialSelected); // Atualiza o estado com perguntas selecionadas
+                setQuestionsData(filteredQuestions);
+                setSelectedQuestions(initialSelected);
             })
             .catch(error => console.error('Erro ao ler o arquivo Excel:', error));
     }, []);
@@ -49,14 +47,14 @@ const SelectQuestions = () => {
     const handleCheckboxChange = (id) => {
         setSelectedQuestions(prev => ({
             ...prev,
-            [id]: !prev[id]
+            [id]: !prev[id],
         }));
     };
 
     const toggleScope = (scope) => {
         setExpandedScopes(prev => ({
             ...prev,
-            [scope]: !prev[scope]
+            [scope]: !prev[scope],
         }));
     };
 
@@ -66,7 +64,7 @@ const SelectQuestions = () => {
 
         const newSelectedQuestions = { ...selectedQuestions };
         questionsInScope.forEach(q => {
-            newSelectedQuestions[q.id] = !areAllSelected; // Se todos estão selecionados, desmarque-os, caso contrário, marque-os
+            newSelectedQuestions[q.id] = !areAllSelected;
         });
 
         setSelectedQuestions(newSelectedQuestions);
@@ -74,7 +72,7 @@ const SelectQuestions = () => {
 
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
-        navigate('/survey', { state: { selectedQuestions: selectedQuestionsList, userInfo } }); // Passa userInfo
+        navigate('/survey', { state: { selectedQuestions: selectedQuestionsList, userInfo, interviewerInfo } });
     };
 
     const groupedQuestions = questionsData.reduce((groups, question) => {
@@ -93,40 +91,52 @@ const SelectQuestions = () => {
             return acc;
         }, {});
 
-    // Verifica se alguma pergunta foi selecionada
+    const selectedCountByScope = Object.keys(filteredGroupedQuestions).reduce((acc, scope) => {
+        acc[scope] = filteredGroupedQuestions[scope].filter(q => selectedQuestions[q.id]).length;
+        return acc;
+    }, {});
+
     const isAnyQuestionSelected = Object.values(selectedQuestions).some(isSelected => isSelected);
-    
+
+    // Contagem geral: selecionadas / total
+    const totalQuestions = questionsData.length;
+    const totalSelected = Object.values(selectedQuestions).filter(isSelected => isSelected).length;
+
     return (
         <div>
             <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
+            <p className='selected-count'>Questões Selecionadas: {totalSelected}/{totalQuestions}</p> {/* Exibição dinâmica no formato 15/30 */}
             {Object.keys(filteredGroupedQuestions).length === 0 ? (
                 <p>Não há perguntas disponíveis.</p>
             ) : (
                 Object.keys(filteredGroupedQuestions).map(scope => {
                     const questionsInScope = filteredGroupedQuestions[scope];
+                    const totalQuestionsInScope = questionsInScope.length;
+                    const selectedQuestionsInScope = selectedCountByScope[scope];
 
                     return (
                         <div className="scope-container" key={scope}>
                             <h2 className="scope-title" onClick={() => toggleScope(scope)} style={{ cursor: 'pointer' }}>
-                                <input 
-                                    type="checkbox" 
-                                    className='scope-checkbox' 
+                                <input
+                                    type="checkbox"
+                                    className="scope-checkbox"
                                     checked={questionsInScope.every(q => selectedQuestions[q.id])}
-                                    onChange={() => handleScopeCheckboxChange(scope)} 
+                                    onChange={() => handleScopeCheckboxChange(scope)}
                                 />
-                                {scope} {expandedScopes[scope] ? '▲' : '▼'}
+                                {scope} ({selectedQuestionsInScope}/{totalQuestionsInScope}) {/* Exibição no formato selecionadas/total */}
+                                {expandedScopes[scope] ? ' ▲' : ' ▼'}
                             </h2>
                             {expandedScopes[scope] && (
-                                <div className='questions-list'>
+                                <div className="questions-list">
                                     {questionsInScope.map((question) => (
-                                        <div className='question-item' key={question.id}>
+                                        <div className="question-item" key={question.id}>
                                             <input
                                                 type="checkbox"
-                                                className='custom-checkbox'
+                                                className="custom-checkbox"
                                                 checked={!!selectedQuestions[question.id]}
                                                 onChange={() => handleCheckboxChange(question.id)}
                                             />
-                                            <label className='question label'>{question.pergunta}</label>
+                                            <label className="question-label">{question.pergunta}</label>
                                         </div>
                                     ))}
                                 </div>
@@ -135,10 +145,10 @@ const SelectQuestions = () => {
                     );
                 })
             )}
-            <button 
-                className="start-survey-button" 
-                onClick={startSurvey} 
-                disabled={!isAnyQuestionSelected} // Botão desabilitado caso nenhuma pergunta esteja selecionada
+            <button
+                className="start-survey-button"
+                onClick={startSurvey}
+                disabled={!isAnyQuestionSelected}
             >
                 Iniciar Questionário
             </button>

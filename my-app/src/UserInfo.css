@@ -76,3 +76,35 @@ button {
 button:hover {
     background-color: #4cae4c;
 }
+
+.section-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 20px; /* Adiciona espaçamento entre as seções */
+}
+
+.section-header h3 {
+    margin-left: 10px; /* Espaçamento entre a seta e o título */
+}
+
+.toggle-icon {
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 10px; /* Espaçamento entre a seta e o título */
+}
+
+/* Estilo para os dados do entrevistador */
+.dados-entrevistador {
+    margin-bottom: 10px; /* Adiciona espaçamento entre os campos */
+}
+
+/* Estilo para os dados do entrevistado */
+.dados-entrevistado {
+    margin-bottom: 10px; /* Adiciona espaçamento entre os campos */
+}
+
+/* Adiciona espaçamento entre as seções do entrevistador e entrevistado */
+form {
+    margin-bottom: 30px;
+}

@@ -38,28 +38,28 @@ app.post('/api/survey', (req, res) => {
     console.log('Dados recebidos:', req.body); // Verifica os dados recebidos
 
     // Acessando valores do usuário do req.body
-    const { user, responses = [] } = req.body; // Supondo que você agora está enviando um array de respostas
+    const { entrevistado, responses = [] } = req.body; // Supondo que você agora está enviando um array de respostas
 
     // Inserindo os dados do usuário na tabela correspondente
-    const userSql = 'INSERT INTO entrevistados (name, jobtitle, location, functional_area) VALUES (?, ?, ?, ?)';
-    const userValues = [user.name, user.jobTitle, user.location, user.functionalArea]; // Use user.<coluna> conforme o objeto req.body
+    const EntrevistadoSql = 'INSERT INTO entrevistados (name, jobtitle, location, functional_area) VALUES (?, ?, ?, ?)';
+    const EntrevistadoValues = [entrevistado.name, entrevistado.jobTitle, entrevistado.location, entrevistado.functionalArea]; // Use user.<coluna> conforme o objeto req.body
 
-    connection.query(userSql, userValues, (err, userResult) => {
+    connection.query(EntrevistadoSql, EntrevistadoValues, (err, userResult) => {
         if (err) {
             console.error('Erro ao inserir dados do usuário: ' + err.stack);
             return res.status(500).json({ error: 'Erro ao inserir dados do usuário' });
         }
 
         // Obtendo o ID do usuário inserido
-        const userId = userResult.insertId;
+        const EntrevistadoId = userResult.insertId;
 
         // Array para armazenar as promessas de inserção
         const insertPromises = responses.map(response => {
             const { Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios } = response;
 
             // Agora, inserindo as informações do questionário para cada resposta
-            const surveySql = 'INSERT INTO questionario (user_id, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-            const surveyValues = [userId, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios];
+            const surveySql = 'INSERT INTO questionario (user_id, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios, Documentacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+            const surveyValues = [EntrevistadoId, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios];
 
             return new Promise((resolve, reject) => {
                 connection.query(surveySql, surveyValues, (err, surveyResult) => {

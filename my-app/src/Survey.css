@@ -172,3 +172,54 @@ h2 {
     border-radius: 5px;
     background-color: #f0f0f0;
 }
+
+.remove-file-btn {
+    background-color: #ff4d4d; /* Cor vermelha suave para indicar remoção */
+    color: white;
+    border: none;
+    width: 100px;
+    margin-left: 10px;
+    border-radius: 20px; /* Bordas arredondadas */
+    padding: 5px 10px; /* Pequeno padding para tornar o botão menor */
+    font-size: 12px; /* Fonte menor */
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Efeito suave ao passar o mouse */
+    display: inline-block;
+     /* Espaço à esquerda do nome do arquivo */
+}
+
+.remove-file-btn:hover {
+    background-color: #ff1a1a; /* Cor de fundo ao passar o mouse */
+}
+
+.remove-file-btn:active {
+    background-color: #e60000; /* Cor de fundo ao clicar */
+}
+
+.remove-file-btn:focus {
+    outline: none; /* Remove o outline padrão ao clicar */
+}
+
+input[type="file"] {
+    display: none; /* Esconde o botão de upload original */
+}
+
+/* Estilizar o botão de upload personalizado */
+.file-upload-btn {
+    background-color: #007bff; /* Cor azul */
+    color: white;
+    border: none;
+    border-radius: 5px; /* Bordas arredondadas */
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.file-upload-btn:hover {
+    background-color: #0056b3; /* Cor de fundo ao passar o mouse */
+}
+
+.file-upload-btn:focus {
+    outline: none; /* Remove o outline */
+}
