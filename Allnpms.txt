@@ -1,0 +1,17 @@
+--NPMS BÁSICOS
+
+npm start
+npm install 
+
+
+--NPMS INSTALAÇÃO REACT
+
+npm install react react-dom
+
+npm install react-router-dom
+
+
+--NPMS INSTALAÇÃO NODE JS
+
+npm install nodemon
+npm install 
