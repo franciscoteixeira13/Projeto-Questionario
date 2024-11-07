@@ -14,4 +14,8 @@ npm install react-router-dom
 --NPMS INSTALAÇÃO NODE JS
 
 npm install nodemon
+<<<<<<< Updated upstream
 npm install 
+=======
+npm install 
+>>>>>>> Stashed changes
