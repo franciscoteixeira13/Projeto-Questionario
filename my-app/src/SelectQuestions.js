@@ -31,16 +31,14 @@ const SelectQuestions = () => {
                 // Filtra as perguntas não vazias e inicializa selectedQuestions
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
-                        acc[question.id] = true; // Marca como selecionada se não estiver vazia
-                    } else {
-                        acc[question.id] = false; // Marca como não selecionada se estiver vazia
+                        acc[question.id] = false; // Marca como selecionada se não estiver vazia
                     }
                     return acc;
                 }, {});
 
                 // Filtra para incluir apenas perguntas não vazias no questionsData
                 const filteredQuestions = perguntas.filter(q => q.pergunta && q.pergunta.trim() !== '');
-                
+
                 setQuestionsData(filteredQuestions); // Atualiza o estado com perguntas filtradas
                 setSelectedQuestions(initialSelected); // Atualiza o estado com perguntas selecionadas
             })
@@ -75,7 +73,6 @@ const SelectQuestions = () => {
 
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
-        alert(JSON.stringify(selectedQuestions))
         navigate('/survey', { state: { selectedQuestions: selectedQuestionsList, userInfo } }); // Passa userInfo
     };
 
@@ -95,6 +92,9 @@ const SelectQuestions = () => {
             return acc;
         }, {});
 
+    // Verifica se alguma pergunta foi selecionada
+    const isAnyQuestionSelected = Object.values(selectedQuestions).some(isSelected => isSelected);
+    
     return (
         <div>
             <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
@@ -134,7 +134,13 @@ const SelectQuestions = () => {
                     );
                 })
             )}
-            <button className="start-survey-button" onClick={startSurvey}>Iniciar Questionário</button>
+            <button 
+                className="start-survey-button" 
+                onClick={startSurvey} 
+                disabled={!isAnyQuestionSelected} // Botão desabilitado caso nenhuma pergunta esteja selecionada
+            >
+                Iniciar Questionário
+            </button>
         </div>
     );
 };

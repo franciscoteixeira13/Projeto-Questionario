@@ -22,6 +22,7 @@ const Survey = () => {
 
         if (currentQuestionIndex === selectedQuestions.length - 1) {
             handleSubmit();
+            
         } else {
             setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
         }

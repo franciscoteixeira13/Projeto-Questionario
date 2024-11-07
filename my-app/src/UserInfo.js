@@ -13,7 +13,7 @@ const UserInfo = ({ setUserInfo }) => {
         e.preventDefault();
         
         // Cria o objeto userInfo
-        const userInfo = {
+        let userInfo = {
             name,
             jobTitle,
             location,
