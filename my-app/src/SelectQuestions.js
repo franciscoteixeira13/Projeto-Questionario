@@ -7,12 +7,14 @@ const SelectQuestions = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const { userInfo, interviewerInfo } = location.state || {}; // Recebe userInfo e interviewerInfo do estado
-
+    // Recebe informações do entrevistador e entrevistado via state da navegação
+    const { InfoEntrevistado, InfoEntrevistador } = location.state || {};
+    
     const [questionsData, setQuestionsData] = useState([]);
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
 
+    // Lê o arquivo Excel ao carregar o componente
     useEffect(() => {
         fetch('/respostas_questionarios.xlsx')
             .then(response => response.arrayBuffer())
@@ -44,6 +46,7 @@ const SelectQuestions = () => {
             .catch(error => console.error('Erro ao ler o arquivo Excel:', error));
     }, []);
 
+    // Manipula o estado ao marcar/desmarcar uma pergunta
     const handleCheckboxChange = (id) => {
         setSelectedQuestions(prev => ({
             ...prev,
@@ -51,6 +54,7 @@ const SelectQuestions = () => {
         }));
     };
 
+    // Alterna a visibilidade de um âmbito
     const toggleScope = (scope) => {
         setExpandedScopes(prev => ({
             ...prev,
@@ -58,6 +62,7 @@ const SelectQuestions = () => {
         }));
     };
 
+    // Seleciona/deseleciona todas as perguntas de um âmbito
     const handleScopeCheckboxChange = (scope) => {
         const questionsInScope = questionsData.filter(q => q.âmbito === scope);
         const areAllSelected = questionsInScope.every(q => selectedQuestions[q.id]);
@@ -70,11 +75,19 @@ const SelectQuestions = () => {
         setSelectedQuestions(newSelectedQuestions);
     };
 
+    // Navega para a próxima página com as perguntas selecionadas e os dados do entrevistador/entrevistado
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
-        navigate('/survey', { state: { selectedQuestions: selectedQuestionsList, userInfo, interviewerInfo } });
+        navigate('/survey', {
+            state: {
+                selectedQuestions: selectedQuestionsList,
+                InfoEntrevistador: InfoEntrevistador,
+                InfoEntrevistado: InfoEntrevistado
+            },
+        });
     };
 
+    // Agrupa perguntas por âmbito
     const groupedQuestions = questionsData.reduce((groups, question) => {
         if (!question.âmbito) return groups;
         if (!groups[question.âmbito]) {
@@ -84,6 +97,7 @@ const SelectQuestions = () => {
         return groups;
     }, {});
 
+    // Filtra os âmbitos com mais de uma pergunta
     const filteredGroupedQuestions = Object.entries(groupedQuestions)
         .filter(([scope, questions]) => questions.length > 1)
         .reduce((acc, [scope, questions]) => {
@@ -91,6 +105,7 @@ const SelectQuestions = () => {
             return acc;
         }, {});
 
+    // Conta o número de perguntas selecionadas por âmbito
     const selectedCountByScope = Object.keys(filteredGroupedQuestions).reduce((acc, scope) => {
         acc[scope] = filteredGroupedQuestions[scope].filter(q => selectedQuestions[q.id]).length;
         return acc;
@@ -105,7 +120,7 @@ const SelectQuestions = () => {
     return (
         <div>
             <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
-            <p className='selected-count'>Questões Selecionadas: {totalSelected}/{totalQuestions}</p> {/* Exibição dinâmica no formato 15/30 */}
+            <p className="selected-count">Questões Selecionadas: {totalSelected}/{totalQuestions}</p>
             {Object.keys(filteredGroupedQuestions).length === 0 ? (
                 <p>Não há perguntas disponíveis.</p>
             ) : (
@@ -123,7 +138,7 @@ const SelectQuestions = () => {
                                     checked={questionsInScope.every(q => selectedQuestions[q.id])}
                                     onChange={() => handleScopeCheckboxChange(scope)}
                                 />
-                                {scope} ({selectedQuestionsInScope}/{totalQuestionsInScope}) {/* Exibição no formato selecionadas/total */}
+                                {scope} ({selectedQuestionsInScope}/{totalQuestionsInScope})
                                 {expandedScopes[scope] ? ' ▲' : ' ▼'}
                             </h2>
                             {expandedScopes[scope] && (

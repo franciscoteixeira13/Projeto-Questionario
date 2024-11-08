@@ -223,3 +223,29 @@ input[type="file"] {
 .file-upload-btn:focus {
     outline: none; /* Remove o outline */
 }
+
+.file-list {
+    margin-top: 20px;
+}
+
+.file-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Espaçamento entre os itens */
+}
+
+
+
+.remove-file-btn:hover {
+    background-color: #d32f2f; /* Cor de fundo do botão ao passar o mouse */
+}
+
+.file-item span {
+    flex-grow: 1; /* Faz com que o nome do arquivo ocupe o espaço disponível */
+}
