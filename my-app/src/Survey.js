@@ -71,12 +71,18 @@ const Survey = () => {
     };
 
     const handleSubmit = () => {
-        console.log(InfoEntrevistador,InfoEntrevistado)
+        console.log(InfoEntrevistador, InfoEntrevistado);
         const now = new Date();
-        const submissionData = {
-            entrevistador: InfoEntrevistador,
-            entrevistado: InfoEntrevistado,
-            responses: responses.map((resp, index) => ({
+        const submissionData = new FormData();
+    
+        // Adiciona as informações do entrevistador e entrevistado ao FormData
+        submissionData.append('entrevistador', JSON.stringify(InfoEntrevistador));
+        submissionData.append('entrevistado', JSON.stringify(InfoEntrevistado));
+    
+        // Adiciona as respostas, comentários e documentos de cada pergunta ao FormData
+        responses.forEach((resp, index) => {
+            submissionData.append('responses[]', JSON.stringify({
+                
                 Data: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
                 Normas_aplicaveis: selectedQuestions[index].normasAplicaveis,
                 Indice_Pergunta: selectedQuestions[index].id,
@@ -84,18 +90,22 @@ const Survey = () => {
                 Pergunta: selectedQuestions[index].pergunta,
                 Resposta: responses[index],
                 Comentarios: comments[index],
-                Doumentacao: files[index]
-            })),
-        };
 
+            }));
+        });
+    
+        // Adiciona os arquivos de cada pergunta ao FormData
+        Object.keys(files).forEach((questionIndex) => {
+            files[questionIndex].forEach((file) => {
+                submissionData.append('files[]', file); // Envia cada arquivo individualmente
+            });
+        });
+    
         console.log('Dados a serem enviados:', submissionData);
-
+    
         fetch('http://localhost:4000/api/survey', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(submissionData),
+            body: submissionData,
         })
             .then((response) => {
                 if (!response.ok) {
@@ -114,6 +124,7 @@ const Survey = () => {
                 alert(`Houve um erro ao enviar os dados: ${error.message}`);
             });
     };
+    
 
     if (currentQuestionIndex >= selectedQuestions.length || currentQuestionIndex < 0) {
         return null;
