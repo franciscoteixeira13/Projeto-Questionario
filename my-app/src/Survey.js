@@ -43,7 +43,7 @@ const Survey = () => {
 
     const handleFileChange = (e) => {
         const selectedFiles = Array.from(e.target.files);
-    
+        
         // Verifique se o número total de arquivos já selecionados para a pergunta não excede o limite de 5
         if ((files[currentQuestionIndex]?.length || 0) + selectedFiles.length > 5) {
             alert('Você não pode adicionar mais do que 5 arquivos.');
@@ -84,8 +84,8 @@ const Survey = () => {
                 Pergunta: selectedQuestions[index].pergunta,
                 Resposta: responses[index],
                 Comentarios: comments[index],
+                Doumentacao: files[index]
             })),
-            files: files, // Arquivos agrupados por pergunta
         };
 
         console.log('Dados a serem enviados:', submissionData);
