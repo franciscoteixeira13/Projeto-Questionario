@@ -223,7 +223,7 @@ const Survey = () => {
                             {files[currentQuestionIndex].map((file, index) => (
                                 <li key={index} className="file-item">
                                     {file.name}
-                                    <button onClick={() => handleRemoveFile(index)} className="remove-file-button">Remover</button>
+                                    <button onClick={() => handleRemoveFile(index)} className="remove-file-btn">Remover</button>
                                 </li>
                             ))}
                         </ul>

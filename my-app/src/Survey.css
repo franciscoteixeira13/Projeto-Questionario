@@ -1,3 +1,11 @@
+@font-face {
+    font-family: 'PKFGlobalSans-Regular'; /* Define a name for the font */
+    src: url('./fonts/PKFGlobalSans-Regular.otf') format('otf'); /* Adjust the path to your font file */
+         /* Provide multiple formats for compatibility */
+    font-weight: normal; /* You can define the weight */
+    font-style: normal; /* You can define the style */
+}
+
 .survey-container {
     max-width: 600px;
     margin: 0 auto;
@@ -255,15 +263,19 @@ input[type="file"] {
 .select-file-button {
     background-color: #007BFF; /* Azul */
     color: white;
+    width: 100%;
+    
     border: none;
     padding: 12px 20px;
-    
-    font-size: 16px;
-    font-weight: bold;
+    height: 50px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center; /* Alinha o texto verticalmente */
+    justify-content: flex-start;  
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    display: inline-block;
+    
 }
 
 .select-file-button:hover {

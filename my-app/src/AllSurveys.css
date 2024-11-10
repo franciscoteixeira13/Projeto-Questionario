@@ -1,0 +1,34 @@
+/* Estilo da box de título (simula um botão) */
+.survey-header {
+  background-color: #f1f1f1c3; /* Cor de fundo cinza claro */
+  color: #333; /* Cor do texto escuro */
+  padding: 15px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 5px; /* Bordas arredondadas */
+  border: 2px solid #007bff; /* Borda azul-verde, mesma cor do botão */
+  cursor: pointer; /* Muda o cursor para pointer (mãozinha) */
+  transition: background-color 0.3s, transform 0.2s; /* Transição suave */
+}
+
+/* Efeito de hover - quando passar o mouse */
+.survey-header:hover {
+  background-color: #e0e0e0; /* Cor de fundo mais escura */
+  transform: scale(1.05); /* Efeito de aumentar um pouco ao passar o mouse */
+}
+
+/* Título dentro do cabeçalho */
+.survey-header h2 {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+}
+
+/* Destacar as palavras 'Entrevistador' e 'Entrevistado' */
+.survey-header strong {
+  color: #007bff; /* Cor verde que combina com a borda */
+}

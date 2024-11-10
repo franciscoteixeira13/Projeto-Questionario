@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';  // Adicione o Link
 import { useLocation } from 'react-router-dom';
 import UserInfo from './UserInfo';
 import Survey from './Survey';
 import SelectQuestions from './SelectQuestions';
 import SurveySummary from './SurveySummary';
+import AllSurveys from './AllSurveys';  // Importe o componente AllSurveys
 import ThemeProvider, { ThemeContext } from './ThemeContext';
 import './styles.css';
 import Footer from './components/Footer';
-
 
 function App() {
     const [userInfo, setUserInfo] = useState(null);
@@ -27,6 +27,8 @@ function App() {
                 return 'Questionário - CCAM Leiria';
             } else if (location.pathname === '/survey-summary') {
                 return 'Resumo do Seu Questionário';
+            } else if (location.pathname === '/all-surveys') {
+                return 'Todas as Entrevistas';
             } else {
                 return ''; // Para rotas não definidas, retorne uma string vazia
             }
@@ -35,21 +37,26 @@ function App() {
         return <h1>{getTitle()}</h1>; // Renderiza o título
     };
 
-
     return (
         <ThemeProvider>
             <Router>
                 <ThemeContext.Consumer>
                     {({ theme, toggleTheme }) => (
                         <div className={theme}>
-                            
                             <div className="container">
+                                {/* Botão para ir para a página de All Surveys */}
+                                {userInfo && (
+                                    <Link to="/all-surveys">
+                                        <button className="go-to-all-surveys-button">Ver Todas as Entrevistas</button>
+                                    </Link>
+                                )}
                                 <Title />
                                 <Routes>
                                     <Route path="/" element={userInfo ? <SelectQuestions onStartSurvey={setSelectedQuestions} /> : <UserInfo setUserInfo={setUserInfo} />} />
                                     <Route path="/select-questions" element={<SelectQuestions onStartSurvey={setSelectedQuestions} />} />
                                     <Route path="/survey" element={<Survey selectedQuestions={selectedQuestions} userInfo={userInfo} />} />
                                     <Route path="/survey-summary" element={<SurveySummary />} />
+                                    <Route path="/all-surveys" element={<AllSurveys />} /> {/* Rota para AllSurveys */}
                                 </Routes>
                             </div>
                             <Footer />
@@ -58,7 +65,6 @@ function App() {
                 </ThemeContext.Consumer>
             </Router>
         </ThemeProvider>
-       
     );
 }
 

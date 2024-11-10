@@ -152,6 +152,121 @@ app.post('/api/survey', upload.fields([{ name: 'files[0]', maxCount: 5 }]), (req
 });
 
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+
+app.get('/api/surveys', (req, res) => {
+    const query = `
+     SELECT 
+        entrevistados.name AS entrevistadoName,
+        entrevistados.jobtitle AS entrevistadoJobTitle,
+        entrevistados.location AS entrevistadoLocation,
+        entrevistados.functional_area AS entrevistadoFunctional_area,
+        entrevistador.name AS entrevistadorName,
+        entrevistador.jobtitle AS entrevistadorJobTitle,
+        entrevistador.location AS entrevistadorLocation,
+        entrevistador.functional_area AS entrevistadorFunctional_area,
+        questionario.entrevista_id,  -- Certifique-se de usar o nome correto aqui
+        questionario.Pergunta,
+        questionario.Resposta,
+        questionario.Documentacao,
+        questionario.Comentarios,
+        questionario.Normas_aplicaveis,
+        questionario.Ambito,
+        questionario.Indice_Pergunta,
+        questionario.Data
+      FROM questionario
+      JOIN entrevistados ON questionario.user_id = entrevistados.id
+      JOIN entrevistador ON questionario.entrevistador_id = entrevistador.id
+      ORDER BY questionario.id_questionario, questionario.Data ASC;
+    `;
+  
+    connection.query(query, (err, results) => {
+        if (err) {
+          console.error('Erro na consulta SQL:', err);
+          return res.status(500).json({ error: 'Erro ao obter as entrevistas', details: err.message });
+        }
+      
+        const groupedResults = results.reduce((acc, row) => {
+            if (!acc[row.entrevista_id]) {
+                acc[row.entrevista_id] = {
+                    entrevista_id: row.entrevista_id,
+                    entrevistadoName: row.entrevistadoName,
+                    entrevistadoJobTitle: row.entrevistadoJobTitle,
+                    entrevistadoLocation: row.entrevistadoLocation,
+                    entrevistadoFunctional_area: row.entrevistadoFunctional_area,
+                    entrevistadorName: row.entrevistadorName,
+                    entrevistadorJobTitle: row.entrevistadorJobTitle,
+                    entrevistadorLocation: row.entrevistadorLocation,
+                    entrevistadorFunctional_area: row.entrevistadorFunctional_area,
+                    surveyDetails: []
+                };
+            }
+
+            // Substituir valores nulos por padrões
+            acc[row.entrevista_id].surveyDetails.push({
+                Pergunta: row.Pergunta,
+                Resposta: row.Resposta || "Sem resposta",
+                Normas_aplicaveis: row.Normas_aplicaveis || "Nenhuma norma aplicada",
+                Ambito: row.Ambito || "Sem âmbito definido",
+                Indice_Pergunta: row.Indice_Pergunta || "Sem índice de pergunta",
+                Comentarios: row.Comentarios || "Nenhum comentário",
+                Documentacao: row.Documentacao,
+                entrevistaData: row.Data
+            });
+
+            return acc;
+        }, {});
+
+        const finalResults = Object.values(groupedResults);
+      
+        // Processando a documentação
+        const processedResults = finalResults.map(survey => {
+            survey.surveyDetails = survey.surveyDetails.map(question => {
+                if (question.Documentacao) {
+                    const files = question.Documentacao.split(',').map(filePath => path.basename(filePath));
+                    question.Documentacao = files.join(', ');
+                }
+                return question;
+            });
+            return survey;
+        });
+
+        res.status(200).json(processedResults);
+    });
+});
+
+
+app.get('/api/search', (req, res) => {
+    const { searchTerm, searchCriteria } = req.query;
+  
+    if (!searchTerm || !searchCriteria) {
+      return res.status(400).json({ error: 'Termo de pesquisa e critério são necessários' });
+    }
+  
+    // Criação de consulta SQL com base no critério de pesquisa
+    let query = 'SELECT * FROM entrevistas WHERE ';
+    let values = [];
+  
+    switch (searchCriteria) {
+      case 'entrevistador':
+        query += 'entrevistadorName LIKE ?';
+        values.push(`%${searchTerm}%`);
+        break;
+      case 'entrevistado':
+        query += 'entrevistadoName LIKE ?';
+        values.push(`%${searchTerm}%`);
+        break;
+      case 'entrevista_id':
+        query += 'entrevista_id LIKE ?';
+        values.push(`%${searchTerm}%`);
+        break;
+      default:
+        return res.status(400).json({ error: 'Critério de pesquisa inválido' });
+    }
+})
+
+
 // Inicia o servidor
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
