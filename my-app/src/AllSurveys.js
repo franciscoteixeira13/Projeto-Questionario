@@ -4,58 +4,33 @@ import './AllSurveys.css';
 
 const AllSurveys = () => {
   const [surveys, setSurveys] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [searchCriteria, setSearchCriteria] = useState('entrevistador');
-  const [expandedSurveyId, setExpandedSurveyId] = useState(null);
-  const [expandedQuestions, setExpandedQuestions] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [surveysPerPage] = useState(20);
+  const [expandedSurveyId, setExpandedSurveyId] = useState(null); // Controla qual título está expandido
+  const [expandedQuestions, setExpandedQuestions] = useState({}); // Controla as perguntas expandidas por entrevista
+  const [currentPage, setCurrentPage] = useState(1); // Página atual
+  const [surveysPerPage] = useState(20); // Número de entrevistas por página
 
   // Carregar os dados da API
   useEffect(() => {
-    fetchSurveys(); // Carregar as entrevistas quando o componente for montado
+    axios
+      .get('http://localhost:4000/api/surveys')
+      .then((response) => setSurveys(response.data))
+      .catch((error) => console.error('Erro ao obter as entrevistas:', error));
   }, []);
 
-  // Função para buscar as entrevistas
-  const fetchSurveys = async () => {
-    try {
-      const response = await axios.get('http://localhost:4000/api/surveys');
-      setSurveys(response.data);
-    } catch (error) {
-      console.error('Erro ao obter as entrevistas:', error);
-    }
+  // Alternar expansão de um título específico
+  const toggleSurveyExpansion = (id) => {
+    setExpandedSurveyId((prevId) => (prevId === id ? null : id)); // Se já estiver expandido, recolhe, senão expande
   };
 
-  // Função para realizar a pesquisa em tempo real
-  useEffect(() => {
-    if (searchTerm === '') {
-      fetchSurveys(); // Se o campo de pesquisa estiver vazio, carrega todas as entrevistas
-    } else {
-      const timeoutId = setTimeout(() => {
-        searchSurveys(searchTerm, searchCriteria); // Realiza a pesquisa após um pequeno atraso
-      }, 500); // Delay de 500ms para evitar chamadas em excesso
-
-      return () => clearTimeout(timeoutId); // Limpar o timeout se o valor for alterado antes de terminar
-    }
-  }, [searchTerm, searchCriteria]); // Dependendo da alteração no input ou critério de pesquisa
-
-  // Função para pesquisar no banco de dados
-  const searchSurveys = async (term, criteria) => {
-    try {
-      const response = await axios.get('http://localhost:4000/api/search', {
-        params: {
-          searchTerm: term,
-          searchCriteria: criteria,
-        },
-      });
-      setSurveys(response.data); // Atualiza a lista com os resultados da pesquisa
-      setCurrentPage(1); // Resetar a página para a primeira ao filtrar
-    } catch (error) {
-      console.error('Erro ao realizar a pesquisa:', error);
-    }
+  // Alternar expansão de uma pergunta específica dentro de uma entrevista
+  const toggleQuestionExpansion = (surveyId, index) => {
+    const questionKey = `${surveyId}-${index}`; // Gerar uma chave única para cada pergunta (combinando surveyId e index)
+    setExpandedQuestions((prevExpandedQuestions) => ({
+      ...prevExpandedQuestions,
+      [questionKey]: prevExpandedQuestions[questionKey] === true ? false : true, // Expande ou recolhe
+    }));
   };
 
-  // Função para baixar os arquivos
   const downloadFile = (fileName) => {
     const fileUrl = `http://localhost:4000/uploads/${fileName}`;
     const link = document.createElement('a');
@@ -64,21 +39,12 @@ const AllSurveys = () => {
     link.click();
   };
 
-  // Alternar expansão de um título específico
-  const toggleSurveyExpansion = (id) => {
-    setExpandedSurveyId((prevId) => (prevId === id ? null : id));
-  };
+  // Determina os índices para cortar as entrevistas para a página atual
+  const indexOfLastSurvey = currentPage * surveysPerPage;
+  const indexOfFirstSurvey = indexOfLastSurvey - surveysPerPage;
+  const currentSurveys = surveys.slice(indexOfFirstSurvey, indexOfLastSurvey);
 
-  // Alternar expansão de uma pergunta específica
-  const toggleQuestionExpansion = (surveyId, index) => {
-    const questionKey = `${surveyId}-${index}`;
-    setExpandedQuestions((prevExpandedQuestions) => ({
-      ...prevExpandedQuestions,
-      [questionKey]: prevExpandedQuestions[questionKey] === true ? false : true,
-    }));
-  };
-
-  // Função de navegação
+  // Funções de navegação de página
   const nextPage = () => {
     if (currentPage * surveysPerPage < surveys.length) {
       setCurrentPage(currentPage + 1);
@@ -91,53 +57,24 @@ const AllSurveys = () => {
     }
   };
 
-  // Determina os índices para cortar as entrevistas para a página atual
-  const indexOfLastSurvey = currentPage * surveysPerPage;
-  const indexOfFirstSurvey = indexOfLastSurvey - surveysPerPage;
-  const currentSurveys = surveys.slice(indexOfFirstSurvey, indexOfLastSurvey);
-
   return (
     <div>
       <h1>Entrevistas Realizadas</h1>
 
-      {/* Barra de pesquisa */}
-      <div className="search-bar" style={{ marginBottom: '20px' }}>
-        <select
-          value={searchCriteria}
-          onChange={(e) => setSearchCriteria(e.target.value)}
-          style={{ padding: '5px', marginRight: '10px' }}
-        >
-          <option value="entrevistador">Entrevistador</option>
-          <option value="entrevistado">Entrevistado</option>
-          <option value="entrevista_id">ID da Entrevista</option>
-        </select>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Pesquisar..."
-          style={{
-            padding: '5px',
-            width: '300px',
-            marginRight: '10px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
-        />
-      </div>
-
       {/* Exibir as entrevistas da página atual */}
       {currentSurveys.map((survey) => (
         <div key={survey.id_entrevista} className="survey">
-          {/* Cabeçalho da entrevista */}
+          {/* Cabeçalho da entrevista com a data formatada */}
           <div
             className="survey-header"
-            onClick={() => toggleSurveyExpansion(survey.id_entrevista)}
+            onClick={() => toggleSurveyExpansion(survey.entrevista_id)}
           >
             <h2>
               <strong>Entrevistador:</strong> {survey.entrevistadorName || 'Sem nome do entrevistador'} |
               <strong> Entrevistado:</strong> {survey.entrevistadoName || 'Sem nome do entrevistado'}
             </h2>
+
+            {/* Exibir a data da entrevista logo abaixo */}
             {survey.entrevistaData && (
               <p style={{ fontStyle: 'italic', fontSize: '0.9em', marginTop: '5px' }}>
                 <strong>Data da Entrevista:</strong> {survey.entrevistaData}
@@ -145,46 +82,128 @@ const AllSurveys = () => {
             )}
           </div>
 
-          {/* Detalhes expandíveis */}
-          {expandedSurveyId === survey.id_entrevista && (
-            <div className="survey-details">
-              <p>{survey.details}</p>
-              {/* Exemplo de exibição de arquivos para download */}
-              {survey.surveyDetails.map((question, index) => (
-                <div key={index} className="documentos">
-                  {question.Documentacao && question.Documentacao.trim() && (
-                    <div>
-                      <h4>Documentos:</h4>
-                      <ul>
-                        {question.Documentacao.split(',').map((fileName, idx) => (
-                          <li key={idx}>
-                            <a
-                              href="#"
-                              onClick={() => downloadFile(fileName.trim())}
-                              style={{ color: 'blue', textDecoration: 'underline' }}
-                            >
-                              {fileName.trim()}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+          {/* Exibir detalhes apenas para o título expandido */}
+          {expandedSurveyId === survey.entrevista_id && (
+            <>
+              <div
+                className="survey-details"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '20px',
+                  marginBottom: '10px',
+                }}
+              >
+                {/* Detalhes do entrevistador */}
+                <div style={{ flex: 1, padding: '10px', borderRight: '1px solid #ddd' }}>
+                  <h3>Entrevistador</h3>
+                  <ul>
+                    <li><strong>Nome:</strong> {survey.entrevistadorName || 'Não disponível'}</li>
+                    <li><strong>Cargo:</strong> {survey.entrevistadorJobTitle || 'Não disponível'}</li>
+                    <li><strong>Localização:</strong> {survey.entrevistadorLocation || 'Não disponível'}</li>
+                    <li><strong>Área Funcional:</strong> {survey.entrevistadorFunctional_area || 'Não disponível'}</li>
+                  </ul>
                 </div>
-              ))}
-            </div>
+
+                {/* Detalhes do entrevistado */}
+                <div style={{ flex: 1, padding: '10px' }}>
+                  <h3>Entrevistado</h3>
+                  <ul>
+                    <li><strong>Nome:</strong> {survey.entrevistadoName || 'Não disponível'}</li>
+                    <li><strong>Cargo:</strong> {survey.entrevistadoJobTitle || 'Não disponível'}</li>
+                    <li><strong>Localização:</strong> {survey.entrevistadoLocation || 'Não disponível'}</li>
+                    <li><strong>Área Funcional:</strong> {survey.entrevistadoFunctional_area || 'Não disponível'}</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="questions-list" style={{ paddingLeft: '20px', marginTop: '10px' }}>
+                {survey.surveyDetails.map((question, index) => {
+                  const questionKey = `${survey.id_entrevista}-${index}`; // Gerar chave única para a pergunta
+                  return (
+                    <div key={index} className="question" style={{ marginBottom: '20px' }}>
+                      {/* Linha de pergunta com a seta ao lado esquerdo */}
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                        onClick={() => toggleQuestionExpansion(survey.id_entrevista, index)}
+                      >
+                        <span
+                          style={{
+                            marginRight: '10px', // Espaçamento entre a seta e o texto
+                            transform: expandedQuestions[questionKey] ? 'rotate(90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.3s',
+                          }}
+                        >
+                          ➤
+                        </span>
+                        <h3>{question.Pergunta}</h3>
+                      </div>
+
+                      {/* Mostrar detalhes da pergunta se estiver expandida */}
+                      {expandedQuestions[questionKey] && (
+                        <>
+                          <p><strong>Resposta:</strong> {question.Resposta}</p>
+                          <p><strong>Comentários:</strong> {question.Comentarios || 'Nenhum comentário'}</p>
+                          <p><strong>Normas Aplicáveis:</strong> {question.Normas_aplicaveis}</p>
+                          <p><strong>Índice da Pergunta:</strong> {question.Indice_Pergunta}</p>
+                          <p><strong>Âmbito:</strong> {question.Ambito}</p>
+
+                          {/* Mostrar documentos apenas se existirem */}
+                          {question.Documentacao?.trim() && (
+                            <div className="documentos">
+                              <h4>Documentos:</h4>
+                              <ul>
+                                {question.Documentacao.split(',').map((fileName, idx) => (
+                                  <li key={idx}>
+                                    <a
+                                      href="#"
+                                      onClick={() => downloadFile(fileName.trim())}
+                                      style={{ color: 'blue', textDecoration: 'underline' }}
+                                    >
+                                      {fileName.trim()}
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       ))}
 
-      {/* Navegação de páginas */}
+      {/* Botões de navegação */}
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <button onClick={prevPage} disabled={currentPage === 1}>
+        <button
+          onClick={prevPage}
+          disabled={currentPage === 1}
+          style={{
+            padding: '10px 20px',
+            marginRight: '10px',
+            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            backgroundColor: '#f1f1f1',
+            border: '1px solid #007bff',
+            borderRadius: '5px',
+          }}
+        >
           Anterior
         </button>
         <button
           onClick={nextPage}
           disabled={currentPage * surveysPerPage >= surveys.length}
+          style={{
+            padding: '10px 20px',
+            cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer',
+            backgroundColor: '#f1f1f1',
+            border: '1px solid #007bff',
+            borderRadius: '5px',
+          }}
         >
           Próxima
         </button>
