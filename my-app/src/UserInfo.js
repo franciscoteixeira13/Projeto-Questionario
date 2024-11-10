@@ -3,25 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import './UserInfo.css';
 
 const UserInfo = ({ setUserInfo }) => {
-    // Estados para os campos do entrevistado
+    
     const [nomeEntrevistado, setNomeEntrevistado] = useState('');
     const [jobTitleEntrevistado, setJobTitleEntrevistado] = useState('');
     const [localizacaoEntrevistado, setLocalizacaoEntrevistado] = useState('');
     const [functionalAreaEntrevistado, setFunctionalAreaEntrevistado] = useState('');
 
-    // Estados para os campos do entrevistador
+    
     const [nomeEntrevistador, setNomeEntrevistador] = useState('');
     const [jobTitleEntrevistador, setJobTitleEntrevistador] = useState('');
     const [localizacaoEntrevistador, setLocalizacaoEntrevistador] = useState('');
     const [functionalAreaEntrevistador, setFunctionalAreaEntrevistador] = useState('');
 
-    // Controle de visibilidade das seções
+   
     const [isInterviewerVisible, setInterviewerVisible] = useState(true);
     const [isIntervieweeVisible, setIntervieweeVisible] = useState(false);
 
     const navigate = useNavigate();
 
-    // Função para validar os campos obrigatórios
+    
     const validateForm = () => {
         return (
             nomeEntrevistado.trim() !== '' &&
@@ -35,7 +35,7 @@ const UserInfo = ({ setUserInfo }) => {
         );
     };
 
-    // Função para alternar a visibilidade das seções
+    
     const toggleVisibility = (section) => {
         if (section === 'interviewer') {
             setInterviewerVisible(!isInterviewerVisible);
@@ -47,13 +47,13 @@ const UserInfo = ({ setUserInfo }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Valida o formulário antes de prosseguir
+        
         if (!validateForm()) {
             alert('Por favor, preencha todos os campos obrigatórios antes de continuar.');
             return;
         }
 
-        // Cria os objetos com os dados do formulário
+       
         const InfoEntrevistado = {
             nomeEntrevistado,
             jobTitleEntrevistado,
@@ -68,10 +68,13 @@ const UserInfo = ({ setUserInfo }) => {
             functionalAreaEntrevistador,
         };
 
-        // Armazena as informações no estado global
-        setUserInfo({ InfoEntrevistado, InfoEntrevistador });
+        
+        setUserInfo({ InfoEntrevistador, InfoEntrevistado });
 
-        // Limpa os campos do formulário
+       
+        navigate('/select-questions', {state: {InfoEntrevistador, InfoEntrevistado}});
+
+       
         setNomeEntrevistado('');
         setJobTitleEntrevistado('');
         setLocalizacaoEntrevistado('');
@@ -80,13 +83,20 @@ const UserInfo = ({ setUserInfo }) => {
         setJobTitleEntrevistador('');
         setLocalizacaoEntrevistador('');
         setFunctionalAreaEntrevistador('');
+    };
 
-        // Navega para a próxima página
-        navigate('/select-questions', {state: {InfoEntrevistador, InfoEntrevistado}});
+   
+    const handleRedirect = () => {
+        navigate('/all-surveys');  
     };
 
     return (
         <form onSubmit={handleSubmit}>
+            
+            <div className="redirect-button">
+                <button type="button" onClick={handleRedirect}>Visualizar todos os Questionários</button>
+            </div>
+
             <div className="section-header" onClick={() => toggleVisibility('interviewer')}>
                 <span className="toggle-icon">{isInterviewerVisible ? '▼' : '▲'}</span>
                 <h3>Dados do Entrevistador</h3>

@@ -8,11 +8,30 @@ const Survey = () => {
     const { selectedQuestions, InfoEntrevistador, InfoEntrevistado } = location.state || { selectedQuestions: [], InfoEntrevistador: {}, InfoEntrevistado: {} };
 
     console.log('Perguntas recebidas:', selectedQuestions);
-
+    console.log(InfoEntrevistado, InfoEntrevistado)
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [responses, setResponses] = useState(Array(selectedQuestions.length).fill(''));
     const [comments, setComments] = useState(Array(selectedQuestions.length).fill(''));
-    const [files, setFiles] = useState({}); // Mapeamento: Pergunta -> Arquivos
+    const [files, setFiles] = useState(Array(selectedQuestions.length).fill([]));
+
+    // Função para adicionar arquivos
+    const handleFileChange = (event) => {
+        const newFiles = Array.from(event.target.files);
+        setFiles((prevFiles) => {
+            const updatedFiles = [...prevFiles];
+            updatedFiles[currentQuestionIndex] = [...updatedFiles[currentQuestionIndex], ...newFiles];
+            return updatedFiles;
+        });
+    };
+
+    // Função para remover um arquivo específico
+    const handleRemoveFile = (fileIndex) => {
+        setFiles((prevFiles) => {
+            const updatedFiles = [...prevFiles];
+            updatedFiles[currentQuestionIndex] = updatedFiles[currentQuestionIndex].filter((_, index) => index !== fileIndex);
+            return updatedFiles;
+        });
+    };
 
     const handleNextQuestion = () => {
         if (responses[currentQuestionIndex] === '') {
@@ -41,48 +60,28 @@ const Survey = () => {
         });
     };
 
-    const handleFileChange = (e) => {
-        const selectedFiles = Array.from(e.target.files);
-        
-        // Verifique se o número total de arquivos já selecionados para a pergunta não excede o limite de 5
-        if ((files[currentQuestionIndex]?.length || 0) + selectedFiles.length > 5) {
-            alert('Você não pode adicionar mais do que 5 arquivos.');
+    const handleSubmit = () => {
+        if (!InfoEntrevistador.nomeEntrevistador || !InfoEntrevistado.nomeEntrevistado) {
+            alert('Por favor, preencha as informações do entrevistador e do entrevistado corretamente.');
             return;
         }
     
-        // Atualize os arquivos para a pergunta atual
-        setFiles((prevFiles) => {
-            const updatedFiles = prevFiles[currentQuestionIndex] || [];
-            return {
-                ...prevFiles,
-                [currentQuestionIndex]: [...updatedFiles, ...selectedFiles],
-            };
-        });
-    };
-
-    const handleRemoveFile = (fileName) => {
-        setFiles((prevFiles) => {
-            const updatedFiles = { ...prevFiles };
-            updatedFiles[currentQuestionIndex] = updatedFiles[currentQuestionIndex]?.filter(
-                (file) => file.name !== fileName
-            );
-            return updatedFiles;
-        });
-    };
-
-    const handleSubmit = () => {
-        console.log(InfoEntrevistador, InfoEntrevistado);
         const now = new Date();
-        const submissionData = new FormData();
+        const formData = new FormData();
     
-        // Adiciona as informações do entrevistador e entrevistado ao FormData
-        submissionData.append('entrevistador', JSON.stringify(InfoEntrevistador));
-        submissionData.append('entrevistado', JSON.stringify(InfoEntrevistado));
+        // Adiciona campos do InfoEntrevistador diretamente ao FormData
+        Object.entries(InfoEntrevistador).forEach(([key, value]) => {
+            formData.append(`InfoEntrevistador[${key}]`, value);
+        });
     
-        // Adiciona as respostas, comentários e documentos de cada pergunta ao FormData
-        responses.forEach((resp, index) => {
-            submissionData.append('responses[]', JSON.stringify({
-                
+        // Adiciona campos do InfoEntrevistado diretamente ao FormData
+        Object.entries(InfoEntrevistado).forEach(([key, value]) => {
+            formData.append(`InfoEntrevistado[${key}]`, value);
+        });
+    
+        // Adiciona as respostas e os arquivos ao FormData
+        responses.forEach((response, index) => {
+            const questionData = {
                 Data: `${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
                 Normas_aplicaveis: selectedQuestions[index].normasAplicaveis,
                 Indice_Pergunta: selectedQuestions[index].id,
@@ -90,40 +89,47 @@ const Survey = () => {
                 Pergunta: selectedQuestions[index].pergunta,
                 Resposta: responses[index],
                 Comentarios: comments[index],
-
-            }));
-        });
+            };
     
-        // Adiciona os arquivos de cada pergunta ao FormData
-        Object.keys(files).forEach((questionIndex) => {
-            files[questionIndex].forEach((file) => {
-                submissionData.append('files[]', file); // Envia cada arquivo individualmente
+            // Adiciona dados da pergunta
+            Object.entries(questionData).forEach(([key, value]) => {
+                formData.append(`responses[${index}][${key}]`, value);
             });
+    
+            // Adiciona os arquivos relacionados (se houver)
+            if (files[index] && files[index].length > 0) {
+                files[index].forEach((file) => {
+                    // Envia o arquivo com o nome correto para cada pergunta (sem duplicar o índice)
+                    formData.append(`files[${index}]`, file);
+                });
+            }
         });
     
-        console.log('Dados a serem enviados:', submissionData);
-    
+        // Envia os dados para o servidor
         fetch('http://localhost:4000/api/survey', {
             method: 'POST',
-            body: submissionData,
+            body: formData, // Não defina headers manualmente
         })
-            .then((response) => {
-                if (!response.ok) {
-                    return response.text().then((text) => {
-                        throw new Error(`Erro ${response.status}: ${text}`);
-                    });
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log('Dados enviados com sucesso:', data);
-                navigate('/survey-summary', { state: { selectedQuestions, responses, comments } });
-            })
-            .catch((error) => {
-                console.error('Erro ao enviar os dados:', error);
-                alert(`Houve um erro ao enviar os dados: ${error.message}`);
-            });
+        .then((response) => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`Erro ${response.status}: ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log('Dados enviados com sucesso:', data);
+            // Navega para a próxima página após o envio bem-sucedido
+            navigate('/survey-summary', { state: { selectedQuestions, responses, comments, files } });
+        })
+        .catch((error) => {
+            console.error('Erro ao enviar os dados:', error);
+            alert(`Houve um erro ao enviar os dados: ${error.message}`);
+        });
     };
+    
+    
     
 
     if (currentQuestionIndex >= selectedQuestions.length || currentQuestionIndex < 0) {
@@ -135,114 +141,107 @@ const Survey = () => {
 
     return (
         <div>
-        <h2>Pergunta {currentQuestionIndex + 1} de {totalQuestions}</h2>
-        <h3 className="pergunta-text">{selectedQuestions[currentQuestionIndex].pergunta}</h3>
+            <h2>Pergunta {currentQuestionIndex + 1} de {totalQuestions}</h2>
+            <h3 className='pergunta-text'>{selectedQuestions[currentQuestionIndex].pergunta}</h3>
 
-        <div className="additional-info">
-            <h4>Informações Adicionais:</h4>
-            <ul>
-                <li><strong>Normas Aplicáveis:</strong> {selectedQuestions[currentQuestionIndex].normasAplicaveis || 'N/A'}</li>
-                <li><strong>Índice da Pergunta:</strong> {selectedQuestions[currentQuestionIndex].id}</li>
-                <li><strong>Âmbito:</strong> {selectedQuestions[currentQuestionIndex].âmbito || 'N/A'}</li>
-            </ul>
-        </div>
-
-        <div className="option-buttons">
-            <button
-                className={`small-button ${responses[currentQuestionIndex] === 'Sim' ? 'selected' : ''}`}
-                onClick={() => handleOptionSelect('Sim')}
-            >
-                Sim
-            </button>
-            <button
-                className={`small-button ${responses[currentQuestionIndex] === 'Não' ? 'selected' : ''}`}
-                onClick={() => handleOptionSelect('Não')}
-            >
-                Não
-            </button>
-        </div>
-
-        <textarea
-            minLength="5"
-            maxLength="500"
-            className="response-input"
-            value={responses[currentQuestionIndex]}
-            onChange={(e) => {
-                const updatedResponses = [...responses];
-                updatedResponses[currentQuestionIndex] = e.target.value;
-                setResponses(updatedResponses);
-            }}
-            placeholder="A sua resposta..."
-            rows="6"
-            required
-        />
-
-        <h3>Comentários:</h3>
-        <textarea
-            minLength="5"
-            maxLength="500"
-            className="comment-input"
-            value={comments[currentQuestionIndex]}
-            onChange={(e) => {
-                const updatedComments = [...comments];
-                updatedComments[currentQuestionIndex] = e.target.value;
-                setComments(updatedComments);
-            }}
-            placeholder="O seu comentário..."
-            rows="3"
-        />
-
-        <div className="file-upload">
-            <label htmlFor="file-upload" className="file-upload-btn">
-                Carregar Arquivos
-            </label>
-            <input
-                type="file"
-                id="file-upload"
-                multiple
-                accept=".xlsx, .xls, .docx, .doc, .jpg, .jpeg, .png, .pdf"
-                onChange={handleFileChange}
-            />
-        </div>
-
-        {files[currentQuestionIndex]?.length > 0 && (
-            <div className="file-list">
-                <h4>Arquivos Adicionados:</h4>
+            <div className="question-details">
                 <ul>
-                    {files[currentQuestionIndex].map((file, index) => (
-                        <li key={index} className="file-item">
-                            <span>{file.name}</span>
-                            <button
-                                onClick={() => handleRemoveFile(file.name)}
-                                className="remove-file-btn"
-                            >
-                                Remover
-                            </button>
-                        </li>
-                    ))}
+                    <li><strong>Normas Aplicáveis:</strong> {selectedQuestions[currentQuestionIndex].normasAplicaveis || 'N/A'}</li>
+                    <li><strong>Índice da Pergunta:</strong> {selectedQuestions[currentQuestionIndex].id}</li>
+                    <li><strong>Âmbito:</strong> {selectedQuestions[currentQuestionIndex].âmbito || 'N/A'}</li>
                 </ul>
             </div>
-        )}
 
-        <div className="button-container">
-            {currentQuestionIndex > 0 && (
+            <div className="option-buttons">
                 <button
-                    className="back-button"
-                    onClick={handlePreviousQuestion}
-                    disabled={currentQuestionIndex === 0}
+                    className={`small-button ${responses[currentQuestionIndex] === 'Sim' ? 'selected' : ''}`}
+                    onClick={() => handleOptionSelect('Sim')}
                 >
-                    Voltar
+                    Sim
                 </button>
-            )}
-            <button
-                className="submit-button"
-                type="submit"
-                onClick={handleNextQuestion}
-            >
-                {currentQuestionIndex < selectedQuestions.length - 1 ? 'Próxima Pergunta' : 'Enviar Formulário'}
-            </button>
+                <button
+                    className={`small-button ${responses[currentQuestionIndex] === 'Não' ? 'selected' : ''}`}
+                    onClick={() => handleOptionSelect('Não')}
+                >
+                    Não
+                </button>
+            </div>
+
+            <textarea
+                minLength='5'
+                maxLength='40'
+                className="response-input"
+                value={responses[currentQuestionIndex]}
+                onChange={(e) =>
+                    setResponses((prevResponses) => {
+                        const updatedResponses = [...prevResponses];
+                        updatedResponses[currentQuestionIndex] = e.target.value;
+                        return updatedResponses;
+                    })
+                }
+                placeholder="A sua resposta..."
+                rows="4"
+                required
+            />
+
+            <h3>Comentários:</h3>
+            <textarea
+                minLength='5'
+                maxLength='40'
+                className="comment-input"
+                value={comments[currentQuestionIndex]}
+                onChange={(e) =>
+                    setComments((prevComments) => {
+                        const updatedComments = [...prevComments];
+                        updatedComments[currentQuestionIndex] = e.target.value;
+                        return updatedComments;
+                    })
+                }
+                placeholder="O seu comentário..."
+                rows="3"
+            />
+
+            {/* Botão de upload de arquivos */}
+            <div className="file-upload">
+                <button
+                    className="select-file-button"
+                    onClick={() => document.getElementById('file-input').click()}
+                >
+                    Escolher Arquivos
+                </button>
+                <input
+                    type="file"
+                    id="file-input"
+                    multiple
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }} // Esconde o input real
+                />
+                {files[currentQuestionIndex].length > 0 && (
+                    <>
+                        <h4>Arquivos Selecionados:</h4>
+                        <ul>
+                            {files[currentQuestionIndex].map((file, index) => (
+                                <li key={index} className="file-item">
+                                    {file.name}
+                                    <button onClick={() => handleRemoveFile(index)} className="remove-file-button">Remover</button>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+            </div>
+
+            <div className="button-container">
+                {currentQuestionIndex > 0 && (
+                    <button className='back-button' onClick={handlePreviousQuestion} disabled={currentQuestionIndex === 0}>
+                        Voltar
+                    </button>
+                )}
+                <button className='submit-button' type='submit' onClick={handleNextQuestion}>
+                    {currentQuestionIndex < selectedQuestions.length - 1 ? 'Próxima Pergunta' : 'Enviar Formulário'}
+                </button>
+            </div>
         </div>
-    </div>
     );
 };
 

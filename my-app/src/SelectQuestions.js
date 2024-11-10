@@ -8,7 +8,7 @@ const SelectQuestions = () => {
     const navigate = useNavigate();
 
     // Recebe informações do entrevistador e entrevistado via state da navegação
-    const { InfoEntrevistado, InfoEntrevistador } = location.state || {};
+    const { InfoEntrevistador, InfoEntrevistado } = location.state || {};
     
     const [questionsData, setQuestionsData] = useState([]);
     const [selectedQuestions, setSelectedQuestions] = useState({});
@@ -30,7 +30,7 @@ const SelectQuestions = () => {
                     id: row[header.indexOf('Indice Pergunta')],
                     normasAplicaveis: row[header.indexOf('Normas_aplicavel')],
                 }));
-
+                console.log(InfoEntrevistador, InfoEntrevistado)
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
                         acc[question.id] = false;
@@ -78,6 +78,7 @@ const SelectQuestions = () => {
     // Navega para a próxima página com as perguntas selecionadas e os dados do entrevistador/entrevistado
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
+        console.log(InfoEntrevistador)
         navigate('/survey', {
             state: {
                 selectedQuestions: selectedQuestionsList,

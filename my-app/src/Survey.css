@@ -178,6 +178,7 @@ h2 {
     color: white;
     border: none;
     width: 100px;
+    
     margin-left: 10px;
     border-radius: 20px; /* Bordas arredondadas */
     padding: 5px 10px; /* Pequeno padding para tornar o botão menor */
@@ -248,4 +249,58 @@ input[type="file"] {
 
 .file-item span {
     flex-grow: 1; /* Faz com que o nome do arquivo ocupe o espaço disponível */
+}
+
+/* Botão para selecionar arquivos */
+.select-file-button {
+    background-color: #007BFF; /* Azul */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: inline-block;
+}
+
+.select-file-button:hover {
+    background-color: #0056b3; /* Azul mais escuro ao passar o mouse */
+}
+
+/* Estilo para a lista de arquivos */
+.selected-files-list {
+    margin-top: 20px;
+}
+
+.selected-files-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.selected-files-list li {
+    background-color: #f1f1f1;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selected-files-list li button {
+    background-color: #FF4136; /* Vermelho para remoção */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.selected-files-list li button:hover {
+    background-color: #e0282c; /* Vermelho mais escuro */
 }
