@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Importa o hook para navegação
 import axios from 'axios';
+import { jsPDF } from 'jspdf'; // Importando jsPDF para criar o PDF
+import JSZip from 'jszip'; // Importando JSZip
+import { FaDownload } from 'react-icons/fa'; // Importando o ícone de download do react-icons
 import './AllSurveys.css';
 
 const AllSurveys = () => {
+  const navigate = useNavigate(); // Hook para redirecionamento
   const [surveys, setSurveys] = useState([]);
   const [expandedSurveyId, setExpandedSurveyId] = useState(null); // Controla qual título está expandido
   const [expandedQuestions, setExpandedQuestions] = useState({}); // Controla as perguntas expandidas por entrevista
@@ -39,6 +44,81 @@ const AllSurveys = () => {
     link.click();
   };
 
+  // Função para gerar o PDF
+ // Gera o PDF como array buffer
+const generatePDF = (surveyData) => {
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text('Informações da Entrevista', 14, 20);
+  let yPosition = 30;
+
+  doc.setFontSize(12);
+  doc.text(`Entrevistador: ${surveyData.entrevistadorName || 'Não disponível'}`, 14, yPosition);
+  yPosition += 10;
+
+  doc.text(`Entrevistado: ${surveyData.entrevistadoName || 'Não disponível'}`, 14, yPosition);
+  yPosition += 10;
+
+  surveyData.surveyDetails.forEach((question, index) => {
+    doc.text(`Pergunta ${index + 1}: ${question.Pergunta}`, 14, yPosition);
+    yPosition += 10;
+    doc.text(`Resposta: ${question.Resposta || 'Não disponível'}`, 14, yPosition);
+    yPosition += 10;
+    doc.text(`Comentários: ${question.Comentarios || 'Nenhum comentário'}`, 14, yPosition);
+    yPosition += 20;
+  });
+
+  return doc.output('arraybuffer'); // Retorna o PDF como um array buffer
+};
+
+// Gera o ZIP e força o download
+const generateZIP = async (surveyData) => {
+  const zip = new JSZip();
+  const pdfBuffer = generatePDF(surveyData);
+
+  // Adiciona o PDF ao ZIP
+  zip.file(`${surveyData.entrevistadorName} - ${surveyData.entrevistadoName}.pdf`, pdfBuffer);
+
+  // Array para armazenar as promessas de download de arquivos
+  const downloadPromises = [];
+
+  // Cria subpastas para perguntas e adiciona os arquivos associados
+  surveyData.surveyDetails.forEach((question, index) => {
+    if (question.Documentacao?.trim()) {
+      const questionFolder = zip.folder(`Pergunta ${index + 1}`);
+      const files = question.Documentacao.split(',');
+
+      // Para cada arquivo, adiciona uma promessa de download
+      files.forEach((fileName) => {
+        const fileUrl = `http://localhost:4000/uploads/${fileName.trim()}`;
+        const downloadPromise = axios
+          .get(fileUrl, { responseType: 'arraybuffer' }) // Baixa o arquivo como arraybuffer
+          .then((response) => {
+            questionFolder.file(fileName.trim(), response.data); // Adiciona o arquivo ao ZIP
+          })
+          .catch((error) => {
+            console.error(`Erro ao baixar arquivo "${fileName}":`, error);
+          });
+
+        downloadPromises.push(downloadPromise); // Armazena a promessa
+      });
+    }
+  });
+
+  // Aguarda todos os downloads serem concluídos antes de gerar o ZIP
+  await Promise.all(downloadPromises);
+
+  // Gera o arquivo ZIP como um blob
+  zip.generateAsync({ type: 'blob' }).then((content) => {
+    // Força o download do arquivo ZIP
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(content);
+    link.download = `${surveyData.entrevistadorName} - ${surveyData.entrevistadoName}.zip`;
+    link.click();
+  });
+};
+
+
   // Determina os índices para cortar as entrevistas para a página atual
   const indexOfLastSurvey = currentPage * surveysPerPage;
   const indexOfFirstSurvey = indexOfLastSurvey - surveysPerPage;
@@ -59,27 +139,36 @@ const AllSurveys = () => {
 
   return (
     <div>
+      {/* Botão para redirecionar à página de UserInfo */}
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <button className='back-home'
+          onClick={() => navigate('/')}>
+          Voltar para Página Inicial
+        </button>
+      </div>
+
       <h1>Entrevistas Realizadas</h1>
 
       {/* Exibir as entrevistas da página atual */}
       {currentSurveys.map((survey) => (
+        
         <div key={survey.id_entrevista} className="survey">
           {/* Cabeçalho da entrevista com a data formatada */}
           <div
             className="survey-header"
             onClick={() => toggleSurveyExpansion(survey.entrevista_id)}
+            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
           >
             <h2>
               <strong>Entrevistador:</strong> {survey.entrevistadorName || 'Sem nome do entrevistador'} |
               <strong> Entrevistado:</strong> {survey.entrevistadoName || 'Sem nome do entrevistado'}
             </h2>
 
-            {/* Exibir a data da entrevista logo abaixo */}
-            {survey.entrevistaData && (
-              <p style={{ fontStyle: 'italic', fontSize: '0.9em', marginTop: '5px' }}>
-                <strong>Data da Entrevista:</strong> {survey.entrevistaData}
-              </p>
-            )}
+            {/* Botão de Download com Ícone */}
+            <button className='download-button'
+              onClick={() => generateZIP(survey)}>
+              <FaDownload size={16} />
+            </button>
           </div>
 
           {/* Exibir detalhes apenas para o título expandido */}
@@ -121,7 +210,7 @@ const AllSurveys = () => {
                 {survey.surveyDetails.map((question, index) => {
                   const questionKey = `${survey.id_entrevista}-${index}`; // Gerar chave única para a pergunta
                   return (
-                    <div key={index} className="question" style={{ marginBottom: '20px' }}>
+                    <div key={index} className="question-container">
                       {/* Linha de pergunta com a seta ao lado esquerdo */}
                       <div
                         style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
@@ -131,42 +220,44 @@ const AllSurveys = () => {
                           style={{
                             marginRight: '10px', // Espaçamento entre a seta e o texto
                             transform: expandedQuestions[questionKey] ? 'rotate(90deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s',
+                            transition: 'transform 0.3s ease',
                           }}
                         >
-                          ➤
+                          ➔
                         </span>
-                        <h3>{question.Pergunta}</h3>
+                        <p><strong>Pergunta:</strong> {question.Pergunta}</p>
                       </div>
 
-                      {/* Mostrar detalhes da pergunta se estiver expandida */}
+                      {/* Detalhes expandidos */}
                       {expandedQuestions[questionKey] && (
                         <>
-                          <p><strong>Resposta:</strong> {question.Resposta}</p>
-                          <p><strong>Comentários:</strong> {question.Comentarios || 'Nenhum comentário'}</p>
-                          <p><strong>Normas Aplicáveis:</strong> {question.Normas_aplicaveis}</p>
-                          <p><strong>Índice da Pergunta:</strong> {question.Indice_Pergunta}</p>
-                          <p><strong>Âmbito:</strong> {question.Ambito}</p>
+                          <div className="question-details">
+                            <p><strong>Resposta:</strong> {question.Resposta}</p>
+                            <p><strong>Comentários:</strong> {question.Comentarios || 'Nenhum comentário'}</p>
+                            <p><strong>Normas Aplicáveis:</strong> {question.Normas_aplicaveis}</p>
+                            <p><strong>Índice da Pergunta:</strong> {question.Indice_Pergunta}</p>
+                            <p><strong>Âmbito:</strong> {question.Ambito}</p>
 
-                          {/* Mostrar documentos apenas se existirem */}
-                          {question.Documentacao?.trim() && (
-                            <div className="documentos">
-                              <h4>Documentos:</h4>
-                              <ul>
-                                {question.Documentacao.split(',').map((fileName, idx) => (
-                                  <li key={idx}>
-                                    <a
-                                      href="#"
-                                      onClick={() => downloadFile(fileName.trim())}
-                                      style={{ color: 'blue', textDecoration: 'underline' }}
-                                    >
-                                      {fileName.trim()}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
+                            {/* Mostrar documentos apenas se existirem */}
+                            {question.Documentacao?.trim() && (
+                              <div className="documentos">
+                                <h4>Documentos:</h4>
+                                <ul>
+                                  {question.Documentacao.split(',').map((fileName, idx) => (
+                                    <li key={idx}>
+                                      <a
+                                        href="#"
+                                        onClick={() => downloadFile(fileName.trim())}
+                                        style={{ color: 'blue', textDecoration: 'underline' }}
+                                      >
+                                        {fileName.trim()}
+                                      </a>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
                         </>
                       )}
                     </div>
@@ -178,38 +269,48 @@ const AllSurveys = () => {
         </div>
       ))}
 
-      {/* Botões de navegação */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-        <button
-          onClick={prevPage}
-          disabled={currentPage === 1}
-          style={{
-            padding: '10px 20px',
-            marginRight: '10px',
-            cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-            backgroundColor: '#f1f1f1',
-            border: '1px solid #007bff',
-            borderRadius: '5px',
-          }}
-        >
-          Anterior
-        </button>
-        <button
-          onClick={nextPage}
-          disabled={currentPage * surveysPerPage >= surveys.length}
-          style={{
-            padding: '10px 20px',
-            cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer',
-            backgroundColor: '#f1f1f1',
-            border: '1px solid #007bff',
-            borderRadius: '5px',
-          }}
-        >
-          Próxima
-        </button>
-      </div>
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+  {/* Texto da página */}
+  <div style={{ marginBottom: '10px' }}>
+    Página {currentPage} de {Math.ceil(surveys.length / surveysPerPage)}
+  </div>
+
+  {/* Contêiner para os botões de navegação */}
+  <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+    {/* Botão "Anterior" */}
+    <button
+      onClick={prevPage}
+      disabled={currentPage === 1}
+      style={{
+        padding: '10px 20px',
+        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+        backgroundColor: '#f1f1f1',
+        border: '1px solid #007bff',
+        borderRadius: '5px',
+      }}
+    >
+      Anterior
+    </button>
+
+    {/* Botão "Próximo" */}
+    <button
+      onClick={nextPage}
+      disabled={currentPage * surveysPerPage >= surveys.length}
+      style={{
+        padding: '10px 20px',
+        cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer',
+        backgroundColor: '#f1f1f1',
+        border: '1px solid #007bff',
+        borderRadius: '5px',
+      }}
+    >
+      Próximo
+    </button>
+  </div>
+</div>
+
     </div>
   );
 };
-    
+
 export default AllSurveys;

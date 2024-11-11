@@ -14,6 +14,20 @@ const SelectQuestions = () => {
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
 
+    // Verifica se os dados de InfoEntrevistador e InfoEntrevistado estão completos
+    useEffect(() => {
+        if (
+            !InfoEntrevistador || 
+            !InfoEntrevistado || 
+            Object.values(InfoEntrevistador).some(value => !value || value.trim() === '') || 
+            Object.values(InfoEntrevistado).some(value => !value || value.trim() === '')
+        ) {
+            // Redireciona para a página de UserInfo se faltar algum dado
+            alert("Por favor, preencha todas as informações antes de prosseguir.");
+            navigate('/');
+        }
+    }, [InfoEntrevistador, InfoEntrevistado, navigate]);
+
     // Lê o arquivo Excel ao carregar o componente
     useEffect(() => {
         fetch('/respostas_questionarios.xlsx')
@@ -30,7 +44,7 @@ const SelectQuestions = () => {
                     id: row[header.indexOf('Indice Pergunta')],
                     normasAplicaveis: row[header.indexOf('Normas_aplicavel')],
                 }));
-                console.log(InfoEntrevistador, InfoEntrevistado)
+
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
                         acc[question.id] = false;
@@ -78,12 +92,11 @@ const SelectQuestions = () => {
     // Navega para a próxima página com as perguntas selecionadas e os dados do entrevistador/entrevistado
     const startSurvey = () => {
         const selectedQuestionsList = questionsData.filter(q => selectedQuestions[q.id]);
-        console.log(InfoEntrevistador)
         navigate('/survey', {
             state: {
                 selectedQuestions: selectedQuestionsList,
-                InfoEntrevistador: InfoEntrevistador,
-                InfoEntrevistado: InfoEntrevistado
+                InfoEntrevistador,
+                InfoEntrevistado,
             },
         });
     };

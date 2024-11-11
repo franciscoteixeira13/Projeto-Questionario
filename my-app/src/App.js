@@ -44,15 +44,10 @@ function App() {
                     {({ theme, toggleTheme }) => (
                         <div className={theme}>
                             <div className="container">
-                                {/* Botão para ir para a página de All Surveys */}
-                                {userInfo && (
-                                    <Link to="/all-surveys">
-                                        <button className="go-to-all-surveys-button">Ver Todas as Entrevistas</button>
-                                    </Link>
-                                )}
+                                
                                 <Title />
                                 <Routes>
-                                    <Route path="/" element={userInfo ? <SelectQuestions onStartSurvey={setSelectedQuestions} /> : <UserInfo setUserInfo={setUserInfo} />} />
+                                    <Route path="/" element={<UserInfo setUserInfo={setUserInfo} />} />
                                     <Route path="/select-questions" element={<SelectQuestions onStartSurvey={setSelectedQuestions} />} />
                                     <Route path="/survey" element={<Survey selectedQuestions={selectedQuestions} userInfo={userInfo} />} />
                                     <Route path="/survey-summary" element={<SurveySummary />} />

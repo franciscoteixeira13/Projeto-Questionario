@@ -45,18 +45,18 @@ connection.connect((err) => {
     console.log('Conectado ao banco de dados!');
 });
 
-
-
 // Endpoint para inserir dados do questionário (incluindo upload de arquivos)
-app.post('/api/survey', upload.fields([{ name: 'files[0]', maxCount: 5 }]), (req, res) => {
+app.post('/api/survey', upload.any(), (req, res) => {
     const { InfoEntrevistador, InfoEntrevistado, responses } = req.body;
     const interviewId = uuidv4(); 
+
     // Processar os caminhos dos arquivos
     const filePaths = [];
     for (let i = 0; i < responses.length; i++) {
-        const filesForThisQuestion = req.files[`files[${i}]`]; // Recupera os arquivos para a pergunta atual
+        // Dynamically filter files for the current question index
+        const filesForThisQuestion = req.files.filter(file => file.fieldname === `files[${i}]`);
 
-        if (filesForThisQuestion) {
+        if (filesForThisQuestion.length > 0) {
             const pathsForQuestion = filesForThisQuestion.map((file) => file.path); // Extrai os caminhos dos arquivos
             filePaths.push(pathsForQuestion.join(',')); // Concatena os caminhos separados por vírgulas
         } else {
@@ -131,9 +131,12 @@ app.post('/api/survey', upload.fields([{ name: 'files[0]', maxCount: 5 }]), (req
 
                 return new Promise((resolve, reject) => {
                     connection.query(surveySql, surveyValues, (err, result) => {
-                        if (err) return reject(err);
-                        resolve(result.insertId); // Retorna o ID do questionário inserido
+                        if (err) return reject(err);  // Verifique aqui se a variável err está correta
+                        resolve(result.insertId);
                     });
+                })
+                .catch((error) => { // Verifique o nome da variável de erro
+                    res.status(500).json({ error: 'Erro ao salvar respostas do questionário', details: error.message });
                 });
             });
 
@@ -142,6 +145,7 @@ app.post('/api/survey', upload.fields([{ name: 'files[0]', maxCount: 5 }]), (req
                     res.status(200).json({
                         message: 'Dados salvos com sucesso!',
                         surveyIds,
+                        interviewId
                     });
                 })
                 .catch((err) => {
@@ -150,7 +154,6 @@ app.post('/api/survey', upload.fields([{ name: 'files[0]', maxCount: 5 }]), (req
         });
     });
 });
-
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -178,7 +181,7 @@ app.get('/api/surveys', (req, res) => {
       FROM questionario
       JOIN entrevistados ON questionario.user_id = entrevistados.id
       JOIN entrevistador ON questionario.entrevistador_id = entrevistador.id
-      ORDER BY questionario.id_questionario, questionario.Data ASC;
+      ORDER BY questionario.Data DESC, questionario.id_questionario ;
     `;
   
     connection.query(query, (err, results) => {

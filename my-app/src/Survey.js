@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Survey.css';
 
@@ -7,24 +7,38 @@ const Survey = () => {
     const navigate = useNavigate();
     const { selectedQuestions, InfoEntrevistador, InfoEntrevistado } = location.state || { selectedQuestions: [], InfoEntrevistador: {}, InfoEntrevistado: {} };
 
-    console.log('Perguntas recebidas:', selectedQuestions);
-    console.log(InfoEntrevistado, InfoEntrevistado)
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [responses, setResponses] = useState(Array(selectedQuestions.length).fill(''));
     const [comments, setComments] = useState(Array(selectedQuestions.length).fill(''));
     const [files, setFiles] = useState(Array(selectedQuestions.length).fill([]));
 
-    // Função para adicionar arquivos
+    // Verifica se os dados do User Info estão preenchidos
+    useEffect(() => {
+        if (selectedQuestions.length === 0) {
+            // Redireciona para a página de seleção de perguntas se não houver perguntas selecionadas
+            alert('Não há perguntas selecionadas. Por favor, volte e selecione as perguntas.');
+            navigate('/select-questions');
+        }
+    }, [selectedQuestions, navigate]);
+
     const handleFileChange = (event) => {
         const newFiles = Array.from(event.target.files);
+
+        if (files[currentQuestionIndex].length + newFiles.length > 5) {
+            alert('Você pode enviar no máximo 5 arquivos por pergunta.');
+            return;
+        }
+
         setFiles((prevFiles) => {
             const updatedFiles = [...prevFiles];
-            updatedFiles[currentQuestionIndex] = [...updatedFiles[currentQuestionIndex], ...newFiles];
+            updatedFiles[currentQuestionIndex] = [
+                ...updatedFiles[currentQuestionIndex],
+                ...newFiles
+            ];
             return updatedFiles;
         });
     };
 
-    // Função para remover um arquivo específico
     const handleRemoveFile = (fileIndex) => {
         setFiles((prevFiles) => {
             const updatedFiles = [...prevFiles];
@@ -65,20 +79,20 @@ const Survey = () => {
             alert('Por favor, preencha as informações do entrevistador e do entrevistado corretamente.');
             return;
         }
-    
+
         const now = new Date();
         const formData = new FormData();
-    
+
         // Adiciona campos do InfoEntrevistador diretamente ao FormData
         Object.entries(InfoEntrevistador).forEach(([key, value]) => {
             formData.append(`InfoEntrevistador[${key}]`, value);
         });
-    
+
         // Adiciona campos do InfoEntrevistado diretamente ao FormData
         Object.entries(InfoEntrevistado).forEach(([key, value]) => {
             formData.append(`InfoEntrevistado[${key}]`, value);
         });
-    
+
         // Adiciona as respostas e os arquivos ao FormData
         responses.forEach((response, index) => {
             const questionData = {
@@ -90,25 +104,24 @@ const Survey = () => {
                 Resposta: responses[index],
                 Comentarios: comments[index],
             };
-    
+
             // Adiciona dados da pergunta
             Object.entries(questionData).forEach(([key, value]) => {
                 formData.append(`responses[${index}][${key}]`, value);
             });
-    
+
             // Adiciona os arquivos relacionados (se houver)
             if (files[index] && files[index].length > 0) {
                 files[index].forEach((file) => {
-                    // Envia o arquivo com o nome correto para cada pergunta (sem duplicar o índice)
                     formData.append(`files[${index}]`, file);
                 });
             }
         });
-    
+
         // Envia os dados para o servidor
         fetch('http://localhost:4000/api/survey', {
             method: 'POST',
-            body: formData, // Não defina headers manualmente
+            body: formData,
         })
         .then((response) => {
             if (!response.ok) {
@@ -119,18 +132,18 @@ const Survey = () => {
             return response.json();
         })
         .then((data) => {
+
             console.log('Dados enviados com sucesso:', data);
-            // Navega para a próxima página após o envio bem-sucedido
-            navigate('/survey-summary', { state: { selectedQuestions, responses, comments, files } });
+
+            const { interviewId } = data
+            
+            navigate('/survey-summary', { state: { interviewId ,selectedQuestions, responses, comments, files } });
         })
         .catch((error) => {
             console.error('Erro ao enviar os dados:', error);
             alert(`Houve um erro ao enviar os dados: ${error.message}`);
         });
     };
-    
-    
-    
 
     if (currentQuestionIndex >= selectedQuestions.length || currentQuestionIndex < 0) {
         return null;

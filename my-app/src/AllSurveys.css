@@ -28,7 +28,55 @@
   font-size: 16px;
 }
 
-/* Destacar as palavras 'Entrevistador' e 'Entrevistado' */
+
 .survey-header strong {
-  color: #007bff; /* Cor verde que combina com a borda */
+  color: #007bff; 
+}
+
+.back-home{background-color: #007bff; font-size: 14px;}
+
+.back-home:hover {
+  background-color: #0056b3;
+}
+
+.question-container {
+  background-color: #f0f0f0;  /* Fundo cinza claro */
+  border: 1px solid #dcdcdc;  /* Borda cinza suave */
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.question-details {
+  background-color: #fafafa;  /* Fundo ainda mais claro para os detalhes expandidos */
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.question-container p {
+  margin: 5px 0;
+}
+
+.question-container h3 {
+  margin-bottom: 10px;
+}
+
+.download-button {
+  width: 50px; /* Tamanho da largura */
+  height: 50px; /* Tamanho da altura */
+  padding: 5; /* Remover padding para garantir que a largura e altura sejam constantes */
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 30%; /* Faz o botão redondo */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.download-button:hover{
+  
+  background-color: #0056b3;
+
 }

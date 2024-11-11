@@ -93,8 +93,8 @@ const UserInfo = ({ setUserInfo }) => {
     return (
         <form onSubmit={handleSubmit}>
             
-            <div className="redirect-button">
-                <button type="button" onClick={handleRedirect}>Visualizar todos os Questionários</button>
+            <div>
+                <button className='redirect-button' type="button" onClick={handleRedirect}>Visualizar todos os Questionários</button>
             </div>
 
             <div className="section-header" onClick={() => toggleVisibility('interviewer')}>
