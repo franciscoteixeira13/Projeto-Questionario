@@ -9,6 +9,7 @@ const app = express();
 const PORT = 4000;
 const { v4: uuidv4 } = require('uuid');
 const JSZip = require('jszip');
+const { redirect } = require('react-router-dom');
 // Configuração do multer para salvar os arquivos diretamente na pasta 'uploads'
 
 const storage = multer.diskStorage({
@@ -135,62 +136,15 @@ app.post('/api/survey', upload.any(), (req, res) => {
                 });
             });
 
-
             Promise.all(surveyPromises)
                 .then(() => {
-                    // Agora vamos criar o arquivo ZIP após o salvamento no banco
-                    const zip = new JSZip();
+                    res.status(200).json({
 
-                    // Nome do arquivo ZIP com base nos nomes do entrevistador e entrevistado
-                    const zipFileName = `${InfoEntrevistador.nomeEntrevistador}-${InfoEntrevistado.nomeEntrevistado}.zip`;
-                    const folder = zip.folder(`${InfoEntrevistador.nomeEntrevistador}-${InfoEntrevistado.nomeEntrevistado}`);
+                        message: 'Dados salvos com sucesso',
+                        redirectTo: '/survey-summary',
+                        interviewId,
 
-                    // Adicionar o PDF na pasta principal
-                    req.files.forEach(file => {
-                        if (file.mimetype === 'application/pdf') {
-                            folder.file(file.originalname, fs.readFileSync(file.path));  // Adiciona o PDF à pasta principal
-                        }
                     });
-
-                    // Criar as subpastas de perguntas dentro da pasta principal
-                    responses.forEach((response, index) => {
-                        const questionText = response.Pergunta;  // Texto da pergunta
-                        const questionFiles = req.files.filter(file => file.fieldname === `files[${index}]`);
-                    
-                        if (questionFiles.length > 0) {
-                            // Formatando o texto da pergunta para ser usado como nome da pasta
-                            const formattedQuestionText = questionText
-                                .replace(/[^a-zA-Z0-9\s]/g, '')  // Remove caracteres especiais
-                                .replace(/\s+/g, '_')            // Substitui espaços por underscores
-                                .substring(0, 100);              // Limita o comprimento do nome da pasta
-                    
-                            // Verifica se o nome formatado da pergunta não está vazio e cria a subpasta com o nome formatado
-                            if (formattedQuestionText.trim() !== '') {
-                                const questionFolder = folder.folder(formattedQuestionText);  // Subpasta para cada pergunta
-                    
-                                // Adicionar os arquivos à subpasta
-                                questionFiles.forEach(file => {
-                                    questionFolder.file(file.originalname, fs.readFileSync(file.path));  // Adiciona o arquivo
-                                });
-                            }
-                        }
-                    });
-                    
-
-                    // Gerar o arquivo ZIP e salvá-lo
-                    zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
-                        .pipe(fs.createWriteStream(path.join('uploads', zipFileName))) // Salva o arquivo ZIP
-                        .on('finish', () => {
-                            // Limpar os arquivos temporários
-                            req.files.forEach(file => fs.unlinkSync(file.path));
-
-                            // Responder com o caminho do arquivo ZIP gerado
-                            res.status(200).json({
-                                message: 'Dados salvos com sucesso!',
-                                zipFilePath: `/uploads/${zipFileName}`,  // Caminho do arquivo ZIP
-                                interviewId,
-                            });
-                        });
                 })
                 .catch((err) => {
                     res.status(500).json({ error: 'Erro ao salvar respostas do questionário', details: err.message });

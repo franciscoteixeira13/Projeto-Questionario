@@ -7,14 +7,13 @@ const SelectQuestions = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Recebe informações do entrevistador e entrevistado via state da navegação
     const { InfoEntrevistador, InfoEntrevistado } = location.state || {};
     
     const [questionsData, setQuestionsData] = useState([]);
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
+    const [selectAll, setSelectAll] = useState(false); // Estado para selecionar/deselecionar todas as perguntas
 
-    // Verifica se os dados de InfoEntrevistador e InfoEntrevistado estão completos
     useEffect(() => {
         if (
             !InfoEntrevistador || 
@@ -22,13 +21,11 @@ const SelectQuestions = () => {
             Object.values(InfoEntrevistador).some(value => !value || value.trim() === '') || 
             Object.values(InfoEntrevistado).some(value => !value || value.trim() === '')
         ) {
-            // Redireciona para a página de UserInfo se faltar algum dado
             alert("Por favor, preencha todas as informações antes de prosseguir.");
             navigate('/');
         }
     }, [InfoEntrevistador, InfoEntrevistado, navigate]);
 
-    // Lê o arquivo Excel ao carregar o componente
     useEffect(() => {
         fetch('/respostas_questionarios.xlsx')
             .then(response => response.arrayBuffer())
@@ -74,6 +71,16 @@ const SelectQuestions = () => {
             ...prev,
             [scope]: !prev[scope],
         }));
+    };
+
+    // Seleciona/deseleciona todas as perguntas
+    const handleSelectAll = () => {
+        const newSelectedQuestions = {};
+        questionsData.forEach(q => {
+            newSelectedQuestions[q.id] = !selectAll;
+        });
+        setSelectedQuestions(newSelectedQuestions);
+        setSelectAll(prev => !prev);
     };
 
     // Seleciona/deseleciona todas as perguntas de um âmbito
@@ -135,6 +142,14 @@ const SelectQuestions = () => {
         <div>
             <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
             <p className="selected-count">Questões Selecionadas: {totalSelected}/{totalQuestions}</p>
+            
+            {/* Botão para selecionar/deselecionar todas as perguntas */}
+            <div style={{ marginBottom: '10px' }}>
+                <button onClick={handleSelectAll}>
+                    {selectAll ? 'Desmarcar todas' : 'Selecionar todas'}
+                </button>
+            </div>
+
             {Object.keys(filteredGroupedQuestions).length === 0 ? (
                 <p>Não há perguntas disponíveis.</p>
             ) : (

@@ -71,14 +71,19 @@
   height: 50px; /* Tamanho da altura */
   padding: 5; /* Remover padding para garantir que a largura e altura sejam constantes */
   background-color: #007bff;
+  position: absolute;
+  right: 0;
+  top: 50%;
   color: #fff;
   border: none;
-  border-radius: 30%; /* Faz o botão redondo */
+  border-radius: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: '5px 10px'; 
   margin-right: 15px;
+  transform: 'translateY(-50%)';
 }
 
 .download-button:hover{
