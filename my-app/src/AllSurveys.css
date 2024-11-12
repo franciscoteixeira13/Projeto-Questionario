@@ -1,4 +1,7 @@
 /* Estilo da box de título (simula um botão) */
+
+
+
 .survey-header {
   background-color: #f1f1f1c3; /* Cor de fundo cinza claro */
   color: #333; /* Cor do texto escuro */
@@ -7,10 +10,12 @@
   font-size: 18px;
   font-weight: bold;  
   display: flex;
+  flex-direction: column;
+  position: relative;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   border-radius: 5px; /* Bordas arredondadas */
-  border: 2px solid #007bff; /* Borda azul-verde, mesma cor do botão */
+  border: 3px solid #007bff; /* Borda azul-verde, mesma cor do botão */
   cursor: pointer; /* Muda o cursor para pointer (mãozinha) */
   transition: background-color 0.3s, transform 0.2s; /* Transição suave */
 }
@@ -25,7 +30,7 @@
 .survey-header h2 {
   margin: 0;
   padding: 0;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 
@@ -41,10 +46,10 @@
 
 .question-container {
   background-color: #f0f0f0;  /* Fundo cinza claro */
-  border: 1px solid #dcdcdc;  /* Borda cinza suave */
+  border: 1px solid #000000;  /* Borda cinza suave */
   border-radius: 5px;
   padding: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .question-details {
@@ -73,6 +78,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-right: 15px;
 }
 
 .download-button:hover{
@@ -80,3 +86,4 @@
   background-color: #0056b3;
 
 }
+

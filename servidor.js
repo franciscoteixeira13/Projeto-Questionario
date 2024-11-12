@@ -8,8 +8,9 @@ const fs = require('fs');
 const app = express();
 const PORT = 4000;
 const { v4: uuidv4 } = require('uuid');
-
+const JSZip = require('jszip');
 // Configuração do multer para salvar os arquivos diretamente na pasta 'uploads'
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = 'uploads'; // Define a pasta 'uploads' como destino para todos os arquivos
@@ -27,6 +28,7 @@ const upload = multer({ storage });
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
 
 // Conexão com o banco de dados
 const connection = mysql.createConnection({
@@ -48,25 +50,22 @@ connection.connect((err) => {
 // Endpoint para inserir dados do questionário (incluindo upload de arquivos)
 app.post('/api/survey', upload.any(), (req, res) => {
     const { InfoEntrevistador, InfoEntrevistado, responses } = req.body;
-    const interviewId = uuidv4(); 
+    const interviewId = uuidv4();  // Gerar ID único para a entrevista
 
-    // Processar os caminhos dos arquivos
+    // Processar as perguntas e arquivos associados
     const filePaths = [];
     for (let i = 0; i < responses.length; i++) {
-        // Dynamically filter files for the current question index
         const filesForThisQuestion = req.files.filter(file => file.fieldname === `files[${i}]`);
-
+        
         if (filesForThisQuestion.length > 0) {
-            const pathsForQuestion = filesForThisQuestion.map((file) => file.path); // Extrai os caminhos dos arquivos
-            filePaths.push(pathsForQuestion.join(',')); // Concatena os caminhos separados por vírgulas
+            const pathsForQuestion = filesForThisQuestion.map((file) => file.path);
+            filePaths.push(pathsForQuestion.join(','));
         } else {
-            filePaths.push(''); // Adiciona string vazia se não houver arquivos
+            filePaths.push('');
         }
     }
 
-    console.log('Dados recebidos:', { InfoEntrevistador, InfoEntrevistado, responses, filePaths });
-
-    // Insere dados do entrevistador
+    // Inserir os dados no banco de dados (entrevistador, entrevistado e respostas do questionário)
     const entrevistadorSql = `INSERT INTO entrevistador (name, jobtitle, location, functional_area) VALUES (?, ?, ?, ?)`;
     const entrevistadorValues = [
         InfoEntrevistador.nomeEntrevistador,
@@ -81,7 +80,7 @@ app.post('/api/survey', upload.any(), (req, res) => {
         }
         const entrevistadorId = entrevistadorResult.insertId;
 
-        // Insere dados do entrevistado
+        // Inserir dados do entrevistado
         const entrevistadoSql = `INSERT INTO entrevistados (name, jobtitle, location, functional_area) VALUES (?, ?, ?, ?)`;
         const entrevistadoValues = [
             InfoEntrevistado.nomeEntrevistado,
@@ -96,7 +95,7 @@ app.post('/api/survey', upload.any(), (req, res) => {
             }
             const entrevistadoId = entrevistadoResult.insertId;
 
-            // Insere os dados do questionário
+            // Insere as respostas do questionário
             const surveySql = `INSERT INTO questionario 
                 (user_id, Data, Normas_aplicaveis, Indice_Pergunta, Ambito, Pergunta, Resposta, Comentarios, Documentacao, entrevistador_id, entrevista_id)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -112,7 +111,6 @@ app.post('/api/survey', upload.any(), (req, res) => {
                     Comentarios,
                 } = response;
 
-                // Recupera a string de arquivos concatenados para esta pergunta
                 const documentacao = filePaths[index] || null;
 
                 const surveyValues = [
@@ -124,29 +122,75 @@ app.post('/api/survey', upload.any(), (req, res) => {
                     Pergunta,
                     Resposta,
                     Comentarios,
-                    documentacao, // Armazena os caminhos dos arquivos associados à pergunta
+                    documentacao,
                     entrevistadorId,
                     interviewId
                 ];
 
                 return new Promise((resolve, reject) => {
                     connection.query(surveySql, surveyValues, (err, result) => {
-                        if (err) return reject(err);  // Verifique aqui se a variável err está correta
+                        if (err) return reject(err);
                         resolve(result.insertId);
                     });
-                })
-                .catch((error) => { // Verifique o nome da variável de erro
-                    res.status(500).json({ error: 'Erro ao salvar respostas do questionário', details: error.message });
                 });
             });
 
+
             Promise.all(surveyPromises)
-                .then((surveyIds) => {
-                    res.status(200).json({
-                        message: 'Dados salvos com sucesso!',
-                        surveyIds,
-                        interviewId
+                .then(() => {
+                    // Agora vamos criar o arquivo ZIP após o salvamento no banco
+                    const zip = new JSZip();
+
+                    // Nome do arquivo ZIP com base nos nomes do entrevistador e entrevistado
+                    const zipFileName = `${InfoEntrevistador.nomeEntrevistador}-${InfoEntrevistado.nomeEntrevistado}.zip`;
+                    const folder = zip.folder(`${InfoEntrevistador.nomeEntrevistador}-${InfoEntrevistado.nomeEntrevistado}`);
+
+                    // Adicionar o PDF na pasta principal
+                    req.files.forEach(file => {
+                        if (file.mimetype === 'application/pdf') {
+                            folder.file(file.originalname, fs.readFileSync(file.path));  // Adiciona o PDF à pasta principal
+                        }
                     });
+
+                    // Criar as subpastas de perguntas dentro da pasta principal
+                    responses.forEach((response, index) => {
+                        const questionText = response.Pergunta;  // Texto da pergunta
+                        const questionFiles = req.files.filter(file => file.fieldname === `files[${index}]`);
+                    
+                        if (questionFiles.length > 0) {
+                            // Formatando o texto da pergunta para ser usado como nome da pasta
+                            const formattedQuestionText = questionText
+                                .replace(/[^a-zA-Z0-9\s]/g, '')  // Remove caracteres especiais
+                                .replace(/\s+/g, '_')            // Substitui espaços por underscores
+                                .substring(0, 100);              // Limita o comprimento do nome da pasta
+                    
+                            // Verifica se o nome formatado da pergunta não está vazio e cria a subpasta com o nome formatado
+                            if (formattedQuestionText.trim() !== '') {
+                                const questionFolder = folder.folder(formattedQuestionText);  // Subpasta para cada pergunta
+                    
+                                // Adicionar os arquivos à subpasta
+                                questionFiles.forEach(file => {
+                                    questionFolder.file(file.originalname, fs.readFileSync(file.path));  // Adiciona o arquivo
+                                });
+                            }
+                        }
+                    });
+                    
+
+                    // Gerar o arquivo ZIP e salvá-lo
+                    zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
+                        .pipe(fs.createWriteStream(path.join('uploads', zipFileName))) // Salva o arquivo ZIP
+                        .on('finish', () => {
+                            // Limpar os arquivos temporários
+                            req.files.forEach(file => fs.unlinkSync(file.path));
+
+                            // Responder com o caminho do arquivo ZIP gerado
+                            res.status(200).json({
+                                message: 'Dados salvos com sucesso!',
+                                zipFilePath: `/uploads/${zipFileName}`,  // Caminho do arquivo ZIP
+                                interviewId,
+                            });
+                        });
                 })
                 .catch((err) => {
                     res.status(500).json({ error: 'Erro ao salvar respostas do questionário', details: err.message });
@@ -268,6 +312,7 @@ app.get('/api/search', (req, res) => {
         return res.status(400).json({ error: 'Critério de pesquisa inválido' });
     }
 })
+
 
 
 // Inicia o servidor

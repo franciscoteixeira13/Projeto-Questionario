@@ -12,7 +12,7 @@ const AllSurveys = () => {
   const [expandedSurveyId, setExpandedSurveyId] = useState(null); // Controla qual título está expandido
   const [expandedQuestions, setExpandedQuestions] = useState({}); // Controla as perguntas expandidas por entrevista
   const [currentPage, setCurrentPage] = useState(1); // Página atual
-  const [surveysPerPage] = useState(20); // Número de entrevistas por página
+  const [surveysPerPage] = useState(10); // Número de entrevistas por página
 
   // Carregar os dados da API
   useEffect(() => {
@@ -46,30 +46,103 @@ const AllSurveys = () => {
 
   // Função para gerar o PDF
  // Gera o PDF como array buffer
-const generatePDF = (surveyData) => {
+ const generatePDF = (survey) => {
   const doc = new jsPDF();
   doc.setFontSize(18);
-  doc.text('Informações da Entrevista', 14, 20);
-  let yPosition = 30;
 
+  // Título com ID da Entrevista logo ao lado (sem espaçamento lateral)
+  doc.text(`Informações da Entrevista:${survey.entrevista_id}`, 14, 20);
+  doc.setFontSize(14);
+  // Colocando o ID ao lado sem distância
+
+  let yPosition = 40; // Ajustando a posição inicial para mais espaço no topo
+
+  // Largura das colunas para o entrevistador e entrevistado
+  const columnWidth = 85;
+  const marginLeft = 14;  // Distância da esquerda para a coluna do entrevistador
+  const marginRight = 105; // Distância da esquerda para a coluna do entrevistado
+
+  // Adicionando as informações do Entrevistador à esquerda com espaçamento extra
+  doc.setFontSize(14);
+  doc.text('Entrevistador:', marginLeft, yPosition);
+  yPosition += 10;
   doc.setFontSize(12);
-  doc.text(`Entrevistador: ${surveyData.entrevistadorName || 'Não disponível'}`, 14, yPosition);
+  doc.text(`Nome: ${survey.entrevistadorName || 'Não disponível'}`, marginLeft, yPosition);
+  yPosition += 6;
+  doc.text(`Cargo: ${survey.entrevistadorJobTitle || 'Não disponível'}`, marginLeft, yPosition);
+  yPosition += 6;
+  doc.text(`Localização: ${survey.entrevistadorLocation || 'Não disponível'}`, marginLeft, yPosition);
+  yPosition += 6;
+  doc.text(`Área Funcional: ${survey.entrevistadorFunctional_area || 'Não disponível'}`, marginLeft, yPosition);
   yPosition += 10;
 
-  doc.text(`Entrevistado: ${surveyData.entrevistadoName || 'Não disponível'}`, 14, yPosition);
-  yPosition += 10;
+  // Mantendo a mesma altura para o Entrevistado, alinhado ao lado direito
+  let yPositionEntrevistado = 40; // Iniciando a posição do entrevistado com o mesmo espaçamento
 
-  surveyData.surveyDetails.forEach((question, index) => {
-    doc.text(`Pergunta ${index + 1}: ${question.Pergunta}`, 14, yPosition);
-    yPosition += 10;
-    doc.text(`Resposta: ${question.Resposta || 'Não disponível'}`, 14, yPosition);
-    yPosition += 10;
-    doc.text(`Comentários: ${question.Comentarios || 'Nenhum comentário'}`, 14, yPosition);
-    yPosition += 20;
+  doc.setFontSize(14);
+  doc.text('Entrevistado:', marginRight, yPositionEntrevistado);
+  yPositionEntrevistado += 10;
+  doc.setFontSize(12);
+  doc.text(`Nome: ${survey.entrevistadoName || 'Não disponível'}`, marginRight, yPositionEntrevistado);
+  yPositionEntrevistado += 6;
+  doc.text(`Cargo: ${survey.entrevistadoJobTitle || 'Não disponível'}`, marginRight, yPositionEntrevistado);
+  yPositionEntrevistado += 6;
+  doc.text(`Localização: ${survey.entrevistadoLocation || 'Não disponível'}`, marginRight, yPositionEntrevistado);
+  yPositionEntrevistado += 6;
+  doc.text(`Área Funcional: ${survey.entrevistadoFunctional_area || 'Não disponível'}`, marginRight, yPositionEntrevistado);
+  yPositionEntrevistado += 10;
+
+  // Desenhando uma linha vertical entre as colunas do entrevistador e entrevistado
+  doc.setLineWidth(0.5);
+  doc.line(marginRight - 10, 30, marginRight - 10, yPositionEntrevistado); // Linha vertical separando as duas colunas
+
+  // Adicionando um espaçamento maior entre as listas do entrevistador/entrevistado e os detalhes da entrevista
+  yPositionEntrevistado += 20; // Aqui aumentamos o espaçamento entre as seções
+
+  // Iniciando a seção de detalhes da entrevista abaixo das listas do entrevistador e entrevistado
+  doc.setFontSize(14);
+  doc.text('Detalhes da Entrevista:', marginLeft, yPositionEntrevistado);
+  yPositionEntrevistado += 10;
+
+  // Iterando sobre as perguntas e respostas
+  survey.surveyDetails.forEach((question, index) => {
+    // Pergunta em negrito
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Pergunta ${index + 1}: ${question.Pergunta}`, marginLeft, yPositionEntrevistado, { maxWidth: 180 });
+    yPositionEntrevistado += 10;
+
+    // Removendo o espaçamento entre "Pergunta" e "Âmbito"
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Resposta: ${question.Resposta || 'Não disponível'}`, marginLeft, yPositionEntrevistado, { maxWidth: 180 });
+    yPositionEntrevistado += 6;  // Espaço reduzido entre Âmbito e Índice
+
+    // Detalhes da Pergunta
+    doc.text(`Comentários: ${question.Comentarios || 'Não disponível'}`, marginLeft, yPositionEntrevistado, { maxWidth: 180 });
+    yPositionEntrevistado += 6;
+
+    // Resposta
+    doc.text(`Indice Pergunta: ${question.Indice_Pergunta || 'Não disponível'}`, marginLeft, yPositionEntrevistado, { maxWidth: 180 });
+    yPositionEntrevistado += 6;
+
+    // Comentários
+    doc.text(`Âmbito: ${question.Ambito || 'Nenhum comentário'}`, marginLeft, yPositionEntrevistado, { maxWidth: 180 });
+    yPositionEntrevistado += 10;
+
+    doc.text(`Normas Aplicáveis: ${question.Normas_aplicaveis || 'Nenhum comentário'}`, marginLeft, yPositionEntrevistado, { maxWidth: 180 });
+    yPositionEntrevistado += 10;
+
+
+    // Verificar se a posição y está muito próxima do final da página
+    if (yPositionEntrevistado > 270) { // 270 é a margem inferior do PDF
+      doc.addPage(); // Adiciona uma nova página se a posição y estiver muito alta
+      yPositionEntrevistado = 20; // Reinicia a posição y na nova página
+    }
   });
 
   return doc.output('arraybuffer'); // Retorna o PDF como um array buffer
 };
+
 
 // Gera o ZIP e força o download
 const generateZIP = async (surveyData) => {
@@ -157,16 +230,40 @@ const generateZIP = async (surveyData) => {
           <div
             className="survey-header"
             onClick={() => toggleSurveyExpansion(survey.entrevista_id)}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              position: 'relative'  // Definir o container como relativo para posicionar o botão
+            }}
           >
             <h2>
               <strong>Entrevistador:</strong> {survey.entrevistadorName || 'Sem nome do entrevistador'} |
               <strong> Entrevistado:</strong> {survey.entrevistadoName || 'Sem nome do entrevistado'}
             </h2>
 
+            {/* ID da Entrevista embaixo do título */}
+            <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px', marginBottom: '5px' }}>
+              ID da Entrevista: {survey.entrevista_id}
+            </p>
+
             {/* Botão de Download com Ícone */}
-            <button className='download-button'
-              onClick={() => generateZIP(survey)}>
+            <button
+              className="download-button"
+              onClick={() => generateZIP(survey)}
+              style={{
+                position: 'absolute',   // Posicionar o botão no lado direito
+                right: '0',             // Alinhar o botão à direita
+                top: '50%',             // Alinhar o botão verticalmente
+                transform: 'translateY(-50%)',  // Ajustar o alinhamento vertical do botão
+                padding: '5px 10px',    // Estilizando o botão
+                backgroundColor: '#007bff',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer'
+              }}
+            >
               <FaDownload size={16} />
             </button>
           </div>
@@ -225,7 +322,7 @@ const generateZIP = async (surveyData) => {
                         >
                           ➔
                         </span>
-                        <p><strong>Pergunta:</strong> {question.Pergunta}</p>
+                        <p><strong>Pergunta {index + 1}:</strong> {question.Pergunta}</p>
                       </div>
 
                       {/* Detalhes expandidos */}
@@ -238,7 +335,6 @@ const generateZIP = async (surveyData) => {
                             <p><strong>Índice da Pergunta:</strong> {question.Indice_Pergunta}</p>
                             <p><strong>Âmbito:</strong> {question.Ambito}</p>
 
-                            {/* Mostrar documentos apenas se existirem */}
                             {question.Documentacao?.trim() && (
                               <div className="documentos">
                                 <h4>Documentos:</h4>
@@ -279,30 +375,23 @@ const generateZIP = async (surveyData) => {
   <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
     {/* Botão "Anterior" */}
     <button
+    className='back-surveys'
       onClick={prevPage}
       disabled={currentPage === 1}
       style={{
-        padding: '10px 20px',
+        
         cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-        backgroundColor: '#f1f1f1',
-        border: '1px solid #007bff',
-        borderRadius: '5px',
+        
       }}
     >
       Anterior
     </button>
 
     {/* Botão "Próximo" */}
-    <button
+    <button className='next-surveys'
       onClick={nextPage}
       disabled={currentPage * surveysPerPage >= surveys.length}
-      style={{
-        padding: '10px 20px',
-        cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer',
-        backgroundColor: '#f1f1f1',
-        border: '1px solid #007bff',
-        borderRadius: '5px',
-      }}
+      style={{cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer'}}
     >
       Próximo
     </button>
