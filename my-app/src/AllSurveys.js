@@ -389,7 +389,6 @@ const generateZIP = async (surveyData) => {
                         </span>
                         <p><strong>Pergunta {index + 1}:</strong> {question.Pergunta}</p>
                       </div>
-
                       
                       {expandedQuestions[questionKey] && (
                         <>

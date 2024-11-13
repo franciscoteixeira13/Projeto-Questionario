@@ -84,7 +84,7 @@ h2 {
 
 .submit-button{
 
-
+    width: 100%;
     padding: 10px 20px;
     padding: 8px 12px;
     margin-right: 10px; /* Margem entre os botões */

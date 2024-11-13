@@ -1,0 +1,50 @@
+.select-file-button{
+
+    background-color: #007BFF; /* Azul */
+    color: white;
+    width: 100%; 
+    border: none;
+    padding: 12px 20px;
+    height: 50px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center; /* Alinha o texto verticalmente */
+    justify-content: center;  /* Centraliza o texto horizontalmente */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 10px;
+
+}
+
+
+.select-file-button:hover {
+    background-color: #0056b3; /* Azul mais escuro ao passar o mouse */
+}
+
+.reset-button{
+
+    background-color: #FB0303;
+    font-size: 15px;
+
+}
+
+.reset-button:hover{
+
+    background-color: #B11112;
+
+}
+
+.insert-button{
+
+    font-size: 16px;
+
+}
+
+
+.current-file-container {
+    display: flex;
+    justify-content: center; /* Centraliza o conteúdo horizontalmente */
+    align-items: center;     /* Centraliza o conteúdo verticalmente */
+    margin-bottom: 20px;     /* Espaço entre este conteúdo e o próximo */
+}

@@ -86,15 +86,19 @@ const UserInfo = ({ setUserInfo }) => {
     };
 
    
-    const handleRedirect = () => {
+    const handleRedirectQuestionario = () => {
         navigate('/all-surveys');  
     };
+    const handleRedirectFileUpload = () => {
+        navigate('/file-upload');
+    }
 
     return (
         <form onSubmit={handleSubmit}>
             
-            <div>
-                <button className='redirect-button' type="button" onClick={handleRedirect}>Visualizar todos os Questionários</button>
+            <div className='redirect-div'>
+                <button className='questionario-button' type="button" onClick={handleRedirectQuestionario}>Visualizar Entrevistas</button>
+                <button className='file-upload-button' type='button' onClick={handleRedirectFileUpload}>Carregar Ficheiro</button>
             </div>
 
             <div className="section-header" onClick={() => toggleVisibility('interviewer')}>

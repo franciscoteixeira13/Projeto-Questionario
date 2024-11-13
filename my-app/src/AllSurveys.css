@@ -92,3 +92,25 @@
 
 }
 
+.redirect-div{
+
+  display: flex;
+    justify-content: space-between; /* Espaça os botões */
+    gap: 10px; /* Espaçamento entre os botões */
+    margin-bottom: 20px; /* Espaço inferior para separar dos elementos abaixo */
+}
+
+.questionario-button, .file-upload-button {
+  padding: 10px 20px; /* Ajusta o tamanho do botão */
+  font-size: 16px; /* Ajusta o tamanho da fonte */
+  cursor: pointer; /* Adiciona cursor pointer ao passar o mouse */
+  border: none; /* Remove bordas */
+  border-radius: 5px; /* Borda arredondada */
+  transition: background-color 0.3s ease; /* Efeito de transição no hover */
+  height: 50px;
+}
+
+.questionario-button:hover, .file-upload-button:hover {
+  background-color: #0056b3; /* Cor do fundo ao passar o mouse */
+  color: white; /* Cor do texto no hover */
+}

@@ -6,9 +6,12 @@ import Survey from './Survey';
 import SelectQuestions from './SelectQuestions';
 import SurveySummary from './SurveySummary';
 import AllSurveys from './AllSurveys';  // Importe o componente AllSurveys
+import FileUpload from './FileUpload';
+
 import ThemeProvider, { ThemeContext } from './ThemeContext';
 import './styles.css';
 import Footer from './components/Footer';
+import { FaFileUpload } from 'react-icons/fa';
 
 function App() {
     const [userInfo, setUserInfo] = useState(null);
@@ -29,7 +32,9 @@ function App() {
                 return 'Resumo do Seu Questionário';
             } else if (location.pathname === '/all-surveys') {
                 return 'Todas as Entrevistas';
-            } else {
+            } else if (location.pathname === '/file-upload'){
+                return 'Seleção de Ficheiro'
+            }else {
                 return ''; // Para rotas não definidas, retorne uma string vazia
             }
         };
@@ -52,6 +57,7 @@ function App() {
                                     <Route path="/survey" element={<Survey selectedQuestions={selectedQuestions} userInfo={userInfo} />} />
                                     <Route path="/survey-summary" element={<SurveySummary />} />
                                     <Route path="/all-surveys" element={<AllSurveys />} /> {/* Rota para AllSurveys */}
+                                    <Route path='/file-upload' element={<FileUpload />} />
                                 </Routes>
                             </div>
                             <Footer />

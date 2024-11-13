@@ -28,13 +28,35 @@ const SelectQuestions = () => {
 
 
     useEffect(() => {
-        fetch('/respostas_questionarios.xlsx')
-            .then(response => response.arrayBuffer())
+        // Faz a requisição ao backend para obter o nome do arquivo Excel
+        fetch('http://localhost:4000/api/excel-file') // URL completa com o servidor backend
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao obter o nome do arquivo Excel.');
+                }
+                return response.json();  // Obtém o nome do arquivo
+            })
             .then(data => {
-                const workbook = XLSX.read(data, { type: 'array' });
+                const filePath = data.fileName; // Obtém o caminho do arquivo Excel
+                if (!filePath) {
+                    throw new Error('Arquivo Excel não encontrado.');
+                }
+    
+                // Faz o fetch para ler o arquivo Excel
+                return fetch(filePath).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar o arquivo Excel.');
+                    }
+                    return response.arrayBuffer(); // Lê o conteúdo do arquivo
+                });
+            })
+            .then(arrayBuffer => {
+                // Processa o conteúdo do arquivo Excel
+                const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    
                 const header = json[0];
                 const perguntas = json.slice(1).map(row => ({
                     pergunta: row[header.indexOf('Pergunta')],
@@ -42,20 +64,22 @@ const SelectQuestions = () => {
                     id: row[header.indexOf('Indice Pergunta')],
                     normasAplicaveis: row[header.indexOf('Normas_aplicavel')],
                 }));
-
+    
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
                         acc[question.id] = false;
                     }
                     return acc;
                 }, {});
-
+    
                 const filteredQuestions = perguntas.filter(q => q.pergunta && q.pergunta.trim() !== '');
-
+    
                 setQuestionsData(filteredQuestions);
                 setSelectedQuestions(initialSelected);
             })
-            .catch(error => console.error('Erro ao ler o arquivo Excel:', error));
+            .catch(error => {
+                console.error('Erro ao processar o arquivo Excel:', error);
+            });
     }, []);
 
     // Manipula o estado ao marcar/desmarcar uma pergunta
@@ -141,6 +165,7 @@ const SelectQuestions = () => {
 
     return (
         <div>
+            <button onClick={() => navigate('/')}>Voltar ao Início</button>
             <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
             <p className="selected-count">Questões Selecionadas: {totalSelected}/{totalQuestions}</p>
             

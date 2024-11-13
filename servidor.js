@@ -158,8 +158,6 @@ app.post('/api/survey', upload.any(), (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-
-
 app.get('/api/surveys', (req, res) => {
     const query = `
      SELECT 
@@ -273,7 +271,7 @@ app.get('/api/search', (req, res) => {
 
 
 app.get('/api/excel-file', (req, res) => {
-    const directoryPath = path.join(__dirname, 'public/ficheiro-excel');
+    const directoryPath = path.join(__dirname, 'my-app/public/ficheiro-excel');
     fs.readdir(directoryPath, (err, files) => {
         if (err) {
             console.error('Erro ao listar arquivos:', err);
@@ -292,6 +290,136 @@ app.get('/api/excel-file', (req, res) => {
     });
 });
 
+const storage1 = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // Caminho do diretório onde o arquivo será armazenado
+        const uploadPath = path.join(__dirname, 'my-app/public/ficheiro-excel');
+        cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+        // Nome do arquivo será o nome original
+        cb(null, file.originalname);
+    }
+});
+
+const upload1 = multer({ storage: storage1 });
+
+app.post('/api/upload-file', (req, res) => {
+    const uploadPath = path.join(__dirname, 'my-app/public/ficheiro-excel');
+
+    // Verifica se o diretório de upload existe
+    fs.access(uploadPath, fs.constants.F_OK, (err) => {
+        if (err) {
+            console.error('Diretório de upload não encontrado:', uploadPath);
+            return res.status(500).json({ error: 'Diretório de arquivos não encontrado.' });
+        }
+
+        // Se existir algum arquivo na pasta, removê-lo
+        fs.readdir(uploadPath, (err, files) => {
+            if (err) {
+                console.error('Erro ao ler os arquivos da pasta:', err);
+                return res.status(500).json({ error: 'Erro ao ler os arquivos.' });
+            }
+
+            // Se a pasta já contiver um arquivo, deletá-lo
+            if (files.length > 0) {
+                const fileToDelete = path.join(uploadPath, files[0]);
+
+                // Remover o arquivo antigo
+                fs.unlink(fileToDelete, (err) => {
+                    if (err) {
+                        console.error('Erro ao excluir o arquivo anterior:', err);
+                        return res.status(500).json({ error: 'Erro ao excluir o arquivo anterior.' });
+                    }
+                    console.log('Arquivo anterior removido:', files[0]);
+
+                    // Agora, salvar o novo arquivo após a exclusão do antigo
+                    upload1.single('file')(req, res, (uploadErr) => {
+                        if (uploadErr) {
+                            console.error('Erro ao carregar o novo arquivo:', uploadErr);
+                            return res.status(500).json({ error: 'Erro ao salvar o novo arquivo.' });
+                        }
+                        res.status(200).json({ message: 'Arquivo carregado e substituído com sucesso!', fileName: req.file.originalname });
+                    });
+                });
+            } else {
+                // Se não houver arquivos antigos, simplesmente salva o novo
+                upload1.single('file')(req, res, (uploadErr) => {
+                    if (uploadErr) {
+                        console.error('Erro ao carregar o novo arquivo:', uploadErr);
+                        return res.status(500).json({ error: 'Erro ao salvar o novo arquivo.' });
+                    }
+                    res.status(200).json({ message: 'Arquivo carregado com sucesso!', fileName: req.file.originalname });
+                });
+            }
+        });
+    });
+});
+
+
+app.post('/api/reset-file', (req, res) => {
+    const publicDir = path.join(__dirname, '../public'); // Ajuste conforme a localização real
+    const targetDir = path.join(publicDir, 'ficheiro-excel');
+
+    // Certifica-te de que a pasta 'ficheiro-excel' existe
+    if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    fs.readdir(publicDir, (err, files) => {
+        if (err) {
+            console.error('Erro ao ler a pasta public:', err);
+            return res.status(500).json({ error: 'Erro ao ler a pasta public.' });
+        }
+
+        // Filtrar os ficheiros Excel
+        const excelFiles = files.filter(file => file.endsWith('.xlsx') || file.endsWith('.xls'));
+
+        if (excelFiles.length === 0) {
+            return res.status(404).json({ error: 'Nenhum arquivo Excel encontrado na pasta public.' });
+        }
+
+        const firstExcelFile = excelFiles[0];
+        const originalFilePath = path.join(publicDir, firstExcelFile);
+        const duplicatedFilePath = path.join(targetDir, firstExcelFile);
+
+        // Remove arquivos existentes na pasta 'ficheiro-excel'
+        fs.readdir(targetDir, (err, targetFiles) => {
+            if (err) {
+                console.error('Erro ao ler a pasta ficheiro-excel:', err);
+                return res.status(500).json({ error: 'Erro ao ler a pasta ficheiro-excel.' });
+            }
+
+            // Remove o primeiro arquivo existente na pasta (se houver)
+            if (targetFiles.length > 0) {
+                const fileToDelete = path.join(targetDir, targetFiles[0]);
+                try {
+                    fs.unlinkSync(fileToDelete);
+                    console.log('Arquivo anterior excluído com sucesso:', targetFiles[0]);
+                } catch (err) {
+                    console.error('Erro ao excluir o arquivo existente:', err);
+                    return res.status(500).json({ error: 'Erro ao excluir o arquivo existente.' });
+                }
+            }
+
+            // Copia o ficheiro original para a pasta 'ficheiro-excel'
+            fs.copyFile(originalFilePath, duplicatedFilePath, (err) => {
+                if (err) {
+                    console.error('Erro ao copiar o arquivo:', err);
+                    return res.status(500).json({ error: 'Erro ao copiar o arquivo.' });
+                }
+
+                console.log('Arquivo duplicado com sucesso:', duplicatedFilePath);
+                res.status(200).json({
+                    message: `Arquivo resetado para o padrão com sucesso.`,
+                    originalFile: firstExcelFile,
+                });
+            });
+        });
+    });
+});
+
+app.use('/ficheiro-excel', express.static(path.join(__dirname, 'my-app' ,'public', 'ficheiro-excel')));
 
 app.use(express.static(path.join(__dirname, 'public')))
 
