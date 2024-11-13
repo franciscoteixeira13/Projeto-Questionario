@@ -26,6 +26,7 @@ const SelectQuestions = () => {
         }
     }, [InfoEntrevistador, InfoEntrevistado, navigate]);
 
+
     useEffect(() => {
         fetch('/respostas_questionarios.xlsx')
             .then(response => response.arrayBuffer())

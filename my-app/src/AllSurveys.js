@@ -14,14 +14,31 @@ const AllSurveys = () => {
   const [expandedQuestions, setExpandedQuestions] = useState({}); // Controla as perguntas expandidas por entrevista
   const [currentPage, setCurrentPage] = useState(1); // Página atual
   const [surveysPerPage] = useState(10); // Número de entrevistas por página
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredSurveys, setFilteredSurveys] = useState(surveys);
 
   // Carregar os dados da API
   useEffect(() => {
     axios
       .get('http://localhost:4000/api/surveys')
-      .then((response) => setSurveys(response.data))
+      .then((response) => {
+        setSurveys(response.data)
+        setFilteredSurveys(response.data)
+      })
       .catch((error) => console.error('Erro ao obter as entrevistas:', error));
   }, []);
+
+  const filterSurveys = (term) => {
+    const filtered = surveys.filter((survey) => {
+      const { entrevistadoName, entrevistadorName, entrevista_id } = survey;
+      return (
+        (entrevistadoName && entrevistadoName.toLowerCase().includes(term.toLowerCase())) ||
+        (entrevistadorName && entrevistadorName.toLowerCase().includes(term.toLowerCase())) ||
+        (entrevista_id && entrevista_id.toString().includes(term))
+      );
+    });
+    setFilteredSurveys(filtered);
+  };
 
   // Alternar expansão de um título específico
   const toggleSurveyExpansion = (id) => {
@@ -245,6 +262,8 @@ const generateZIP = async (surveyData) => {
     }
   };
 
+
+
   return (
     <div>
       {/* Botão para redirecionar à página de UserInfo */}
@@ -257,8 +276,28 @@ const generateZIP = async (surveyData) => {
 
       <h1>Entrevistas Realizadas</h1>
 
+       
+       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Pesquise por nome do entrevistado, entrevistador ou ID"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            filterSurveys(e.target.value);
+          }}
+          style={{
+            padding: '10px',
+            width: '70%',
+            fontSize: '16px',
+            borderRadius: '4px',
+            border: '1px solid #ddd',
+          }}
+        />
+      </div>
+
       {/* Exibir as entrevistas da página atual */}
-      {currentSurveys.map((survey) => (
+      {filteredSurveys.map((survey) => (
         
         <div key={survey.id_entrevista} className="survey">
           {/* Cabeçalho da entrevista com a data formatada */}

@@ -6,11 +6,13 @@ const path = require('path');
 const mysql = require('mysql2');
 const fs = require('fs');
 const app = express();
+
 const PORT = 4000;
 const { v4: uuidv4 } = require('uuid');
 const JSZip = require('jszip');
 const { redirect } = require('react-router-dom');
-// Configuração do multer para salvar os arquivos diretamente na pasta 'uploads'
+const { error } = require('console');
+
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -156,6 +158,8 @@ app.post('/api/survey', upload.any(), (req, res) => {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
+
+
 app.get('/api/surveys', (req, res) => {
     const query = `
      SELECT 
@@ -268,6 +272,28 @@ app.get('/api/search', (req, res) => {
 })
 
 
+app.get('/api/excel-file', (req, res) => {
+    const directoryPath = path.join(__dirname, 'public/ficheiro-excel');
+    fs.readdir(directoryPath, (err, files) => {
+        if (err) {
+            console.error('Erro ao listar arquivos:', err);
+            return res.status(500).json({ error: 'Erro ao listar arquivos' });
+        }
+
+        // Filtra arquivos Excel (.xlsx ou .xls)
+        const excelFiles = files.filter(file => file.endsWith('.xlsx') || file.endsWith('.xls'));
+
+        if (excelFiles.length > 0) {
+            // Retorna o primeiro arquivo encontrado
+            res.json({ fileName: `/ficheiro-excel/${excelFiles[0]}` });
+        } else {
+            res.status(404).json({ error: 'Nenhum arquivo Excel encontrado' });
+        }
+    });
+});
+
+
+app.use(express.static(path.join(__dirname, 'public')))
 
 // Inicia o servidor
 app.listen(PORT, () => {
