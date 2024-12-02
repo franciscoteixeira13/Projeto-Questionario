@@ -6,7 +6,6 @@ const path = require('path');
 const mysql = require('mysql2');
 const fs = require('fs');
 const app = express();
-
 const PORT = 4000;
 const { v4: uuidv4 } = require('uuid');
 const JSZip = require('jszip');
@@ -32,7 +31,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
 // Conexão com o banco de dados
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -41,6 +39,7 @@ const connection = mysql.createConnection({
     database: 'projeto_questionario',
     port: 3306,
 });
+
 
 connection.connect((err) => {
     if (err) {
