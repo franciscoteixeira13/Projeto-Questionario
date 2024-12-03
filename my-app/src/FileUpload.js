@@ -89,7 +89,6 @@ const handleDownloadFile = () => {
     }
 };
 
-
     return (
         <div className="file-upload-container">
         <h2>Carregar Ficheiro Excel</h2>
