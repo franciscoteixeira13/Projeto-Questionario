@@ -64,6 +64,7 @@ const AllSurveys = () => {
 
   // Função para gerar o PDF
  // Gera o PDF como array buffer
+ 
  const generatePDF = (survey) => {
   const doc = new jsPDF();
 
@@ -73,6 +74,7 @@ const AllSurveys = () => {
   // Obter o tamanho da página
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
+  const marginBottom = 10; // Espaço inferior para evitar que o conteúdo ultrapasse os limites da página
   
   // Definir o tamanho do logotipo
   const logoWidth = 43;  // Ajuste a largura do logotipo
@@ -146,6 +148,13 @@ const AllSurveys = () => {
   // Detalhes das perguntas
   yPosition += 20;
   survey.surveyDetails.forEach((question, index) => {
+    // Verificar se o próximo conteúdo ultrapassará o limite inferior da página
+    const nextYPosition = yPosition + 40; // Aproximadamente a altura das perguntas
+    if (nextYPosition > pageHeight - marginBottom) {
+      doc.addPage(); // Adicionar uma nova página
+      yPosition = 20; // Reiniciar a posição na nova página
+    }
+
     // Título da pergunta
     const questionTitle = `Pergunta ${index + 1}`;
     doc.setFontSize(14);
@@ -185,15 +194,15 @@ const AllSurveys = () => {
     yPosition += 10;
 
     // Adicionar nova página se necessário
-    if (yPosition > 270) {
+    const nextPositionCheck = yPosition + 10; // Verifique se a próxima posição vai ultrapassar a página
+    if (nextPositionCheck > pageHeight - marginBottom) {
       doc.addPage();
-      yPosition = 20;
+      yPosition = 20; // Reiniciar a posição para a nova página
     }
   });
 
   return doc.output('arraybuffer');
 };
-
 
 
 // Gera o ZIP e força o download
@@ -202,7 +211,7 @@ const generateZIP = async (surveyData) => {
   const pdfBuffer = generatePDF(surveyData);
 
   // Adiciona o PDF ao ZIP
-  zip.file(`${surveyData.entrevistadorName} - ${surveyData.entrevistadoName}.pdf`, pdfBuffer);
+  zip.file(`Questionário - ${surveyData.entrevistadorName} - ${surveyData.entrevistadoName} - ID ${surveyData.entrevista_id}.pdf`, pdfBuffer);
 
   // Array para armazenar as promessas de download de arquivos
   const downloadPromises = [];
@@ -238,7 +247,7 @@ const generateZIP = async (surveyData) => {
     // Força o download do arquivo ZIP
     const link = document.createElement('a');
     link.href = URL.createObjectURL(content);
-    link.download = `${surveyData.entrevistadorName} - ${surveyData.entrevistadoName}.zip`;
+    link.download = `Questionário - ${surveyData.entrevistadorName} - ${surveyData.entrevistadoName} - ID ${surveyData.entrevista_id}.zip`;
     link.click();
   });
 };
@@ -261,8 +270,6 @@ const generateZIP = async (surveyData) => {
       setCurrentPage(currentPage - 1);
     }
   };
-
-
 
   return (
     <div>

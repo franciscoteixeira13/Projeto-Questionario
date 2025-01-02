@@ -8,9 +8,8 @@ const fs = require('fs');
 const app = express();
 const PORT = 4000;
 const { v4: uuidv4 } = require('uuid');
-const JSZip = require('jszip');
-const { redirect } = require('react-router-dom');
-const { error } = require('console');
+
+
 
 
 const storage = multer.diskStorage({
@@ -320,8 +319,9 @@ app.post('/api/upload-file', (req, res) => {
                 return res.status(500).json({ error: 'Erro ao ler os arquivos.' });
             }
 
-            // Se a pasta já contiver um arquivo, deletá-lo
+            // Se a pasta já contiver um arquivo, eliminá-lo
             if (files.length > 0) {
+
                 const fileToDelete = path.join(uploadPath, files[0]);
 
                 // Remover o arquivo antigo

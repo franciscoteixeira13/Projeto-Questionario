@@ -38,6 +38,9 @@ const FileUpload = () => {
             formData.append('file', selectedFile);
 
             fetch('http://localhost:4000/api/upload-file', {
+                headers:{
+                    'Content-Type ': 'application/json'
+                },
                 method: 'POST',
                 body: formData,
             })
