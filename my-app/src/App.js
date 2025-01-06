@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';  // Adicione o Link
 import { useLocation } from 'react-router-dom';
+
 import UserInfo from './UserInfo';
 import Survey from './Survey';
 import SelectQuestions from './SelectQuestions';
@@ -14,6 +15,7 @@ import Footer from './components/Footer';
 import { FaFileUpload } from 'react-icons/fa';
 
 function App() {
+    
     const [userInfo, setUserInfo] = useState(null);
     const [selectedQuestions, setSelectedQuestions] = useState([]);
 
@@ -35,21 +37,28 @@ function App() {
             } else if (location.pathname === '/file-upload'){
                 return 'Seleção de Ficheiro'
             }else {
-                return ''; // Para rotas não definidas, retorne uma string vazia
+                return ''; 
             }
         };
+
+        useEffect(() =>{
+            const title = getTitle()
+            if(title){
+                document.title = title
+            }
+        }, [location])
     
         return <h1>{getTitle()}</h1>; // Renderiza o título
     };
 
     return (
+        
         <ThemeProvider>
             <Router>
                 <ThemeContext.Consumer>
                     {({ theme, toggleTheme }) => (
                         <div className={theme}>
                             <div className="container">
-                                
                                 <Title />
                                 <Routes>
                                     <Route path="/" element={<UserInfo setUserInfo={setUserInfo} />} />
