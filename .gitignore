@@ -2,5 +2,5 @@
 my-app/public/~$respostas_questionarios.xlsx
 my-app/public/respostas_questionarios.xlsx
 *.xlsx
-
+/uploads
 node_modules
