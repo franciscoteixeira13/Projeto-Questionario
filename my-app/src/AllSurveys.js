@@ -8,6 +8,7 @@ import './AllSurveys.css';
 import logo from './images/img1.png'
 
 const AllSurveys = () => {
+
   const navigate = useNavigate(); // Hook para redirecionamento
   const [surveys, setSurveys] = useState([]);
   const [expandedSurveyId, setExpandedSurveyId] = useState(null); // Controla qual título está expandido
@@ -53,6 +54,37 @@ const AllSurveys = () => {
       [questionKey]: prevExpandedQuestions[questionKey] === true ? false : true, // Expande ou recolhe
     }));
   };
+
+  const handleDeleteSurvey = (surveyId) => {
+    // Exibe a mensagem de confirmação
+    const isConfirmed = window.confirm('Deseja excluir esta entrevista?');
+  
+    if (isConfirmed) {
+      // Se o usuário confirmar, chama a função para deletar a entrevista
+      deleteSurvey(surveyId);
+    }
+  };
+
+
+  const deleteSurvey = async (surveyId) => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/delete-survey/${surveyId}`, {
+        method: 'DELETE',
+      });
+  
+      if (response.ok) {
+        // Sucesso ao excluir, você pode atualizar a lista de entrevistas ou mostrar uma mensagem de sucesso
+        alert('Entrevista excluída com sucesso!');
+      } else {
+        alert('Erro ao excluir a entrevista.');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir:', error);
+      alert('Erro ao excluir a entrevista.');
+    }
+  };
+  
+
 
   const downloadFile = (fileName) => {
     const fileUrl = `http://localhost:4000/uploads/${fileName}`;
@@ -275,16 +307,14 @@ const generateZIP = async (surveyData) => {
     <div>
       {/* Botão para redirecionar à página de UserInfo */}
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-        <button className='back-home'
-          onClick={() => navigate('/')}>
+        <button className='back-home' onClick={() => navigate('/')}>
           Voltar para Página Inicial
         </button>
       </div>
-
+  
       <h1>Entrevistas Realizadas</h1>
-
-       
-       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+  
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <input
           type="text"
           placeholder="Pesquise por nome do entrevistado, entrevistador ou ID"
@@ -302,10 +332,9 @@ const generateZIP = async (surveyData) => {
           }}
         />
       </div>
-
+  
       {/* Exibir as entrevistas da página atual */}
       {filteredSurveys.map((survey) => (
-        
         <div key={survey.id_entrevista} className="survey">
           {/* Cabeçalho da entrevista com a data formatada */}
           <div
@@ -315,19 +344,19 @@ const generateZIP = async (surveyData) => {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
-              position: 'relative'  // Definir o container como relativo para posicionar o botão
+              position: 'relative',  // Definir o container como relativo para posicionar o botão
             }}
           >
             <h2>
               <strong>Entrevistador:</strong> {survey.entrevistadorName || 'Sem nome do entrevistador'} |
               <strong> Entrevistado:</strong> {survey.entrevistadoName || 'Sem nome do entrevistado'}
             </h2>
-
+  
             {/* ID da Entrevista embaixo do título */}
             <p style={{ fontSize: '14px', fontWeight: 'bold', marginTop: '5px', marginBottom: '5px' }}>
               ID da Entrevista: {survey.entrevista_id}
             </p>
-
+  
             {/* Botão de Download com Ícone */}
             <button
               className="download-button"
@@ -338,8 +367,20 @@ const generateZIP = async (surveyData) => {
             >
               <FaDownload size={16} />
             </button>
+  
+            {/* Botão de Excluir entrevista */}
+            <button
+              className="delete-button"
+              onClick={() => handleDeleteSurvey(survey.entrevista_id)} // Chama a função de exclusão
+              style={{
+                transform: 'translateY(-50%)', // Ajuste para alinhar com o botão de download
+                marginLeft: '10px',
+              }}
+            >
+              Excluir
+            </button>
           </div>
-
+  
           {/* Exibir detalhes apenas para o título expandido */}
           {expandedSurveyId === survey.entrevista_id && (
             <>
@@ -362,7 +403,7 @@ const generateZIP = async (surveyData) => {
                     <li><strong>Área Funcional:</strong> {survey.entrevistadorFunctional_area || 'Não disponível'}</li>
                   </ul>
                 </div>
-
+  
                 {/* Detalhes do entrevistado */}
                 <div style={{ flex: 1, padding: '10px' }}>
                   <h3>Entrevistado</h3>
@@ -374,7 +415,7 @@ const generateZIP = async (surveyData) => {
                   </ul>
                 </div>
               </div>
-
+  
               <div className="questions-list" style={{ paddingLeft: '20px', marginTop: '10px' }}>
                 {survey.surveyDetails.map((question, index) => {
                   const questionKey = `${survey.id_entrevista}-${index}`; // Gerar chave única para a pergunta
@@ -396,7 +437,7 @@ const generateZIP = async (surveyData) => {
                         </span>
                         <p><strong>Pergunta {index + 1}:</strong> {question.Pergunta}</p>
                       </div>
-                      
+  
                       {expandedQuestions[questionKey] && (
                         <>
                           <div className="question-details">
@@ -405,7 +446,7 @@ const generateZIP = async (surveyData) => {
                             <p><strong>Normas Aplicáveis:</strong> {question.Normas_aplicaveis}</p>
                             <p><strong>Índice da Pergunta:</strong> {question.Indice_Pergunta}</p>
                             <p><strong>Âmbito:</strong> {question.Ambito}</p>
-
+  
                             {question.Documentacao?.trim() && (
                               <div className="documentos">
                                 <h4>Documentos:</h4>
@@ -435,41 +476,37 @@ const generateZIP = async (surveyData) => {
           )}
         </div>
       ))}
-
-      <div style={{ textAlign: 'center', marginTop: '20px' }}>
   
-  <div style={{ marginBottom: '10px' }}>
-    Página {currentPage} de {Math.ceil(surveys.length / surveysPerPage)}
-  </div>
-
- 
-  <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-   
-    <button
-    className='back-surveys'
-      onClick={prevPage}
-      disabled={currentPage === 1}
-      style={{
-        
-        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
-        
-      }}
-    >
-      Anterior
-    </button>
-
-    
-    <button className='next-surveys'
-      onClick={nextPage}
-      disabled={currentPage * surveysPerPage >= surveys.length}
-      style={{cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer'}}
-    >
-      Próximo
-    </button>
-  </div>
-</div>
-</div>
+      <div style={{ textAlign: 'center', marginTop: '20px' }}>
+        <div style={{ marginBottom: '10px' }}>
+          Página {currentPage} de {Math.ceil(surveys.length / surveysPerPage)}
+        </div>
+  
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <button
+            className='back-surveys'
+            onClick={prevPage}
+            disabled={currentPage === 1}
+            style={{
+              cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+            }}
+          >
+            Anterior
+          </button>
+  
+          <button
+            className='next-surveys'
+            onClick={nextPage}
+            disabled={currentPage * surveysPerPage >= surveys.length}
+            style={{ cursor: currentPage * surveysPerPage >= surveys.length ? 'not-allowed' : 'pointer' }}
+          >
+            Próximo
+          </button>
+        </div>
+      </div>
+    </div>
   );
+  
 };
 
 export default AllSurveys;

@@ -12,8 +12,8 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: center;
   border-radius: 5px; /* Bordas arredondadas */
   border: 3px solid #007bff; /* Borda azul-verde, mesma cor do botão */
   cursor: pointer; /* Muda o cursor para pointer (mãozinha) */
@@ -113,4 +113,31 @@
 .questionario-button:hover, .file-upload-button:hover {
   background-color: #0056b3; /* Cor do fundo ao passar o mouse */
   color: white; /* Cor do texto no hover */
+}
+
+
+.delete-button {
+  width: 50px; /* Tamanho da largura */
+  height: 50px; /* Tamanho da altura */
+  padding: 5; /* Remover padding para garantir que a largura e altura sejam constantes */
+  background-color: #ff0000b4;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: '5px 10px'; 
+  margin-right: 75px;
+  transform: 'translateY(-50%)';
+}
+
+.delete-button:hover{
+  
+  background-color: #ff0000;
+
 }

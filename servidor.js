@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid');
 
 
 
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = 'uploads'; // Define a pasta 'uploads' como destino para todos os arquivos
@@ -355,12 +356,78 @@ app.post('/api/upload-file', (req, res) => {
     });
 });
 
+app.delete('/api/delete-survey/:id', (req, res) => {
+    const surveyId = req.params.id;
+    console.log('Entrevista ID:', surveyId);
+
+    // Buscar a documentação da entrevista no banco de dados
+    connection.query(
+        'SELECT Documentacao FROM questionario WHERE entrevista_id = ?',
+        [surveyId],
+        (error, surveyData) => {
+            if (error) {
+                console.error('Erro ao buscar a documentação:', error);
+                return res.status(500).json({ error: 'Erro ao buscar a documentação da entrevista.' });
+            }
+
+            if (surveyData.length === 0) {
+                console.log('Entrevista não encontrada.');
+                return res.status(404).json({ error: 'Entrevista não encontrada.' });
+            }
+
+            const documentacao = surveyData[0].Documentacao;
+            console.log('Documentação:', documentacao);
+
+            if (documentacao) {
+                // Dividir os caminhos dos arquivos e remover espaços extras
+                const filePaths = documentacao.split(',').map((file) => file.trim());
+
+                console.log('Caminhos dos arquivos:', filePaths);
+
+                // Excluir cada arquivo relacionado
+                filePaths.forEach((relativePath) => {
+                    const fullPath = path.resolve(relativePath); // Resolver o caminho completo
+                    fs.unlink(fullPath, (err) => {
+                        if (err) {
+                            console.warn(`Erro ao excluir o arquivo: ${fullPath}`, err.message);
+                        } else {
+                            console.log(`Arquivo excluído: ${fullPath}`);
+                        }
+                    });
+                });
+            }
+
+            // Excluir a entrevista do banco de dados
+            connection.query(
+                'DELETE FROM questionario WHERE entrevista_id = ?',
+                [surveyId],
+                (deleteError, deleteResult) => {
+                    if (deleteError) {
+                        console.error('Erro ao excluir a entrevista:', deleteError);
+                        return res.status(500).json({ error: 'Erro ao excluir a entrevista.' });
+                    }
+
+                    if (deleteResult.affectedRows > 0) {
+                        // Após exclusão, redirecionar ou carregar os dados atualizados
+                        res.status(200).json({ message: 'Entrevista e arquivos associados excluídos com sucesso.' });
+
+                        // Exemplo de redirecionamento após exclusão
+                        res.redirect('/path-to-your-surveys-page');
+                    } else {
+                        res.status(404).json({ error: 'Entrevista não encontrada.' });
+                    }
+                }
+            );
+        }
+    );
+});
+
 
 app.post('/api/reset-file', (req, res) => {
-    const publicDir = path.join(__dirname, '../public'); // Ajuste conforme a localização real
+    const publicDir = path.join(__dirname, '../public');
     const targetDir = path.join(publicDir, 'ficheiro-excel');
 
-    // Certifica-te de que a pasta 'ficheiro-excel' existe
+   
     if (!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir, { recursive: true });
     }
@@ -371,7 +438,7 @@ app.post('/api/reset-file', (req, res) => {
             return res.status(500).json({ error: 'Erro ao ler a pasta public.' });
         }
 
-        // Filtrar os ficheiros Excel
+      
         const excelFiles = files.filter(file => file.endsWith('.xlsx') || file.endsWith('.xls'));
 
         if (excelFiles.length === 0) {
@@ -382,14 +449,14 @@ app.post('/api/reset-file', (req, res) => {
         const originalFilePath = path.join(publicDir, firstExcelFile);
         const duplicatedFilePath = path.join(targetDir, firstExcelFile);
 
-        // Remove arquivos existentes na pasta 'ficheiro-excel'
+        
         fs.readdir(targetDir, (err, targetFiles) => {
             if (err) {
                 console.error('Erro ao ler a pasta ficheiro-excel:', err);
                 return res.status(500).json({ error: 'Erro ao ler a pasta ficheiro-excel.' });
             }
 
-            // Remove o primeiro arquivo existente na pasta (se houver)
+           
             if (targetFiles.length > 0) {
                 const fileToDelete = path.join(targetDir, targetFiles[0]);
                 try {

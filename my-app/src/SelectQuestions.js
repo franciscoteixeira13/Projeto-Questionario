@@ -12,7 +12,7 @@ const SelectQuestions = () => {
     const [questionsData, setQuestionsData] = useState([]);
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
-    const [selectAll, setSelectAll] = useState(false); // Estado para selecionar/deselecionar todas as perguntas
+    const [selectAll, setSelectAll] = useState(true); // Estado para selecionar/deselecionar todas as perguntas
 
     useEffect(() => {
         if (
@@ -26,22 +26,21 @@ const SelectQuestions = () => {
         }
     }, [InfoEntrevistador, InfoEntrevistado, navigate]);
 
-
     useEffect(() => {
         // Faz a requisição ao backend para obter o nome do arquivo Excel
-        fetch('http://localhost:4000/api/excel-file') // URL completa com o servidor backend
+        fetch('http://localhost:4000/api/excel-file')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Erro ao obter o nome do arquivo Excel.');
                 }
-                return response.json();  // Obtém o nome do arquivo
+                return response.json();
             })
             .then(data => {
                 const filePath = data.fileName; // Obtém o caminho do arquivo Excel
                 if (!filePath) {
                     throw new Error('Arquivo Excel não encontrado.');
                 }
-    
+
                 // Faz o fetch para ler o arquivo Excel
                 return fetch(filePath).then(response => {
                     if (!response.ok) {
@@ -50,13 +49,13 @@ const SelectQuestions = () => {
                     return response.arrayBuffer(); // Lê o conteúdo do arquivo
                 });
             })
+
             .then(arrayBuffer => {
-                // Processa o conteúdo do arquivo Excel
                 const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-    
+
                 const header = json[0];
                 const perguntas = json.slice(1).map(row => ({
                     pergunta: row[header.indexOf('Pergunta')],
@@ -64,16 +63,15 @@ const SelectQuestions = () => {
                     id: row[header.indexOf('Indice Pergunta')],
                     normasAplicaveis: row[header.indexOf('Normas_aplicavel')],
                 }));
-    
+                console.log('perguntas: ', perguntas)
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
-                        acc[question.id] = false;
+                        acc[question.id] = true; // Inicialmente, nenhuma pergunta está selecionada
                     }
                     return acc;
                 }, {});
-    
+
                 const filteredQuestions = perguntas.filter(q => q.pergunta && q.pergunta.trim() !== '');
-    
                 setQuestionsData(filteredQuestions);
                 setSelectedQuestions(initialSelected);
             })
@@ -81,14 +79,16 @@ const SelectQuestions = () => {
                 console.error('Erro ao processar o arquivo Excel:', error);
             });
     }, []);
-
-    // Manipula o estado ao marcar/desmarcar uma pergunta
+    
+    // Manipula o estado ao marcar/desmarcar uma pergunta individual
     const handleCheckboxChange = (id) => {
+        console.log(id)
         setSelectedQuestions(prev => ({
             ...prev,
-            [id]: !prev[id],
+            [id]: !prev[id], // Apenas altera o estado da pergunta específica
         }));
     };
+
 
     // Alterna a visibilidade de um âmbito
     const toggleScope = (scope) => {
@@ -101,25 +101,38 @@ const SelectQuestions = () => {
     // Seleciona/deseleciona todas as perguntas
     const handleSelectAll = () => {
         const newSelectedQuestions = {};
+        const newSelectAllValue = !selectAll; // Define o novo valor de selectAll
+    
         questionsData.forEach(q => {
-            newSelectedQuestions[q.id] = !selectAll;
+            newSelectedQuestions[q.id] = newSelectAllValue; // Marca/desmarca todas as perguntas
         });
-        setSelectedQuestions(newSelectedQuestions);
-        setSelectAll(prev => !prev);
+    
+        setSelectedQuestions(newSelectedQuestions); // Atualiza as perguntas selecionadas
+        setSelectAll(newSelectAllValue); // Atualiza o estado selectAll com o novo valor
     };
-
-    // Seleciona/deseleciona todas as perguntas de um âmbito
+    
+    
+   // Seleciona/deseleciona todas as perguntas dentro de um âmbito
     const handleScopeCheckboxChange = (scope) => {
+        console.log('escopo: ',scope)
         const questionsInScope = questionsData.filter(q => q.âmbito === scope);
-        const areAllSelected = questionsInScope.every(q => selectedQuestions[q.id]);
+        const areAllSelected = selectedCountByScope[scope] === questionsInScope.length;
+
+        console.log('Existem estas perguntas dentro do âmbito: ', questionsInScope)
 
         const newSelectedQuestions = { ...selectedQuestions };
+
+        console.log('Novas questões selecionadas: ', newSelectedQuestions)
+
+        // Se já todas as perguntas do âmbito foram selecionadas, desmarque todas
         questionsInScope.forEach(q => {
-            newSelectedQuestions[q.id] = !areAllSelected;
+            
+            newSelectedQuestions[q.id] = !areAllSelected; // Marca/desmarca todas as perguntas dentro do âmbito
         });
 
         setSelectedQuestions(newSelectedQuestions);
     };
+
 
     // Navega para a próxima página com as perguntas selecionadas e os dados do entrevistador/entrevistado
     const startSurvey = () => {
@@ -163,13 +176,14 @@ const SelectQuestions = () => {
     const totalQuestions = questionsData.length;
     const totalSelected = Object.values(selectedQuestions).filter(isSelected => isSelected).length;
 
+    console.log('questões selecionadas', selectedQuestions.length)
+
     return (
         <div>
             <button onClick={() => navigate('/')}>Voltar ao Início</button>
             <h1 className="select-questions-container">Selecione as Perguntas a que vai Responder</h1>
             <p className="selected-count">Questões Selecionadas: {totalSelected}/{totalQuestions}</p>
-            
-            {/* Botão para selecionar/deselecionar todas as perguntas */}
+
             <div style={{ marginBottom: '10px' }}>
                 <button onClick={handleSelectAll}>
                     {selectAll ? 'Desmarcar todas' : 'Selecionar todas'}
@@ -183,19 +197,20 @@ const SelectQuestions = () => {
                     const questionsInScope = filteredGroupedQuestions[scope];
                     const totalQuestionsInScope = questionsInScope.length;
                     const selectedQuestionsInScope = selectedCountByScope[scope];
-
+                   
                     return (
                         <div className="scope-container" key={scope}>
                             <h2 className="scope-title" onClick={() => toggleScope(scope)} style={{ cursor: 'pointer' }}>
                                 <input
                                     type="checkbox"
                                     className="scope-checkbox"
-                                    checked={questionsInScope.every(q => selectedQuestions[q.id])}
+                                    checked={selectedCountByScope[scope] === questionsInScope.length} 
                                     onChange={() => handleScopeCheckboxChange(scope)}
                                 />
                                 {scope} ({selectedQuestionsInScope}/{totalQuestionsInScope})
                                 {expandedScopes[scope] ? ' ▲' : ' ▼'}
                             </h2>
+                            
                             {expandedScopes[scope] && (
                                 <div className="questions-list">
                                     {questionsInScope.map((question) => (
