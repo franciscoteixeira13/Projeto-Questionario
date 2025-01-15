@@ -1,2 +1,0 @@
-pass office: franciscoteixeirapkf
-pass outsystems: Franciscoteixeirapkf13
