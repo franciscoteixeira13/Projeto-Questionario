@@ -9,10 +9,6 @@ const app = express();
 const PORT = 4000;
 const { v4: uuidv4 } = require('uuid');
 
-
-
-
-
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = 'uploads'; // Define a pasta 'uploads' como destino para todos os arquivos

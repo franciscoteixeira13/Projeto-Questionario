@@ -75,6 +75,7 @@ const AllSurveys = () => {
       if (response.ok) {
         // Sucesso ao excluir, você pode atualizar a lista de entrevistas ou mostrar uma mensagem de sucesso
         alert('Entrevista excluída com sucesso!');
+        window.location.reload()
       } else {
         alert('Erro ao excluir a entrevista.');
       }
@@ -279,7 +280,7 @@ const generateZIP = async (surveyData) => {
     // Força o download do arquivo ZIP
     const link = document.createElement('a');
     link.href = URL.createObjectURL(content);
-    link.download = `Questionário - ${surveyData.entrevistadorName} - ${surveyData.entrevistadoName} - ID ${surveyData.entrevista_id}.zip`;
+    link.download = `Questionário - ${surveyData.entrevistadorName} - ${surveyData.entrevistadoName}.zip`;
     link.click();
   });
 };
