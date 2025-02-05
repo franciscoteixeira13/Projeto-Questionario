@@ -407,8 +407,7 @@ app.delete('/api/delete-survey/:id', (req, res) => {
                         // Após exclusão, redirecionar ou carregar os dados atualizados
                         res.status(200).json({ message: 'Entrevista e arquivos associados excluídos com sucesso.' });
 
-                        // Exemplo de redirecionamento após exclusão
-                        res.redirect('/path-to-your-surveys-page');
+                        
                     } else {
                         res.status(404).json({ error: 'Entrevista não encontrada.' });
                     }
