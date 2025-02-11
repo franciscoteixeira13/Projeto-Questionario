@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './FileUpload.css'; // Adicione o estilo de acordo
+import { BsWindowSidebar } from 'react-icons/bs';
 
 const FileUpload = () => {
     const [selectedFile, setSelectedFile] = useState(null);
@@ -38,15 +39,14 @@ const FileUpload = () => {
             formData.append('file', selectedFile);
 
             fetch('http://localhost:4000/api/upload-file', {
-                headers:{
-                    'Content-Type ': 'application/json'
-                },
+                
                 method: 'POST',
                 body: formData,
             })
             .then((response) => response.json())
             .then((data) => {
                 alert('Arquivo carregado com sucesso!');
+                window.location.reload();
                 console.log(data);
             })
             .catch((error) => {
@@ -66,6 +66,7 @@ const FileUpload = () => {
         .then((response) => response.json())
         .then((data) => {
             alert('Arquivo resetado com sucesso!');
+            window.location.reload();
             console.log(data);
         })
         .catch((error) => {
@@ -73,9 +74,7 @@ const FileUpload = () => {
             alert('Erro ao resetar o arquivo!');
         });
     };
-
-    // Função para fazer o download do arquivo atual
-    // Função para fazer o download do arquivo atual
+  
 const handleDownloadFile = () => {
     if (currentFile) {
         const fileUrl = `http://localhost:4000/ficheiro-excel/${currentFile}`;
@@ -139,7 +138,7 @@ const handleDownloadFile = () => {
             onClick={handleResetFile}
             style={{ color: 'white', marginTop: '10px' }}
         >
-            Resetar Arquivo para Padrão
+            Mudar Arquivo para Padrão
         </button>
     </div>
 
