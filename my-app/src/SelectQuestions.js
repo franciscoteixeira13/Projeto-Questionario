@@ -8,11 +8,10 @@ const SelectQuestions = () => {
     const navigate = useNavigate();
 
     const { InfoEntrevistador, InfoEntrevistado } = location.state || {};
-    
     const [questionsData, setQuestionsData] = useState([]);
     const [selectedQuestions, setSelectedQuestions] = useState({});
     const [expandedScopes, setExpandedScopes] = useState({});
-    const [selectAll, setSelectAll] = useState(true); // Estado para selecionar/deselecionar todas as perguntas
+    const [selectAll, setSelectAll] = useState(true); //Estado das perguntas para marcadas ou desmarcadas
 
     useEffect(() => {
         if (
@@ -26,8 +25,9 @@ const SelectQuestions = () => {
         }
     }, [InfoEntrevistador, InfoEntrevistado, navigate]);
 
+
     useEffect(() => {
-        // Faz a requisição ao backend para obter o nome do arquivo Excel
+        
         fetch('http://localhost:4000/api/excel-file')
             .then(response => {
                 if (!response.ok) {
@@ -66,7 +66,7 @@ const SelectQuestions = () => {
                 console.log('perguntas: ', perguntas)
                 const initialSelected = perguntas.reduce((acc, question) => {
                     if (question.pergunta && question.pergunta.trim() !== '') {
-                        acc[question.id] = true; // Inicialmente, nenhuma pergunta está selecionada
+                        acc[question.id] = true;
                     }
                     return acc;
                 }, {});
@@ -101,18 +101,17 @@ const SelectQuestions = () => {
     // Seleciona/deseleciona todas as perguntas
     const handleSelectAll = () => {
         const newSelectedQuestions = {};
-        const newSelectAllValue = !selectAll; // Define o novo valor de selectAll
+        const newSelectAllValue = !selectAll; 
     
         questionsData.forEach(q => {
-            newSelectedQuestions[q.id] = newSelectAllValue; // Marca/desmarca todas as perguntas
+            newSelectedQuestions[q.id] = newSelectAllValue; 
         });
     
-        setSelectedQuestions(newSelectedQuestions); // Atualiza as perguntas selecionadas
-        setSelectAll(newSelectAllValue); // Atualiza o estado selectAll com o novo valor
+        setSelectedQuestions(newSelectedQuestions); 
+        setSelectAll(newSelectAllValue); 
     };
     
     
-   // Seleciona/deseleciona todas as perguntas dentro de um âmbito
     const handleScopeCheckboxChange = (scope) => {
         console.log('escopo: ',scope)
         const questionsInScope = questionsData.filter(q => q.âmbito === scope);
@@ -124,10 +123,10 @@ const SelectQuestions = () => {
 
         console.log('Novas questões selecionadas: ', newSelectedQuestions)
 
-        // Se já todas as perguntas do âmbito foram selecionadas, desmarque todas
+        
         questionsInScope.forEach(q => {
             
-            newSelectedQuestions[q.id] = !areAllSelected; // Marca/desmarca todas as perguntas dentro do âmbito
+            newSelectedQuestions[q.id] = !areAllSelected; 
         });
 
         setSelectedQuestions(newSelectedQuestions);
@@ -156,9 +155,9 @@ const SelectQuestions = () => {
         return groups;
     }, {});
 
-    // Filtra os âmbitos com mais de uma pergunta
+    // Filtra os âmbitos que apenas tenham perguntas
     const filteredGroupedQuestions = Object.entries(groupedQuestions)
-        .filter(([scope, questions]) => questions.length > 1)
+        .filter(([scope, questions]) => questions.length > 0)
         .reduce((acc, [scope, questions]) => {
             acc[scope] = questions;
             return acc;
