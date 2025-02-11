@@ -101,21 +101,21 @@ const AllSurveys = () => {
  const generatePDF = (survey) => {
   const doc = new jsPDF();
 
-  // Carregar o logotipo (substitua pelo caminho ou código base64 da sua imagem)
-  const logoPath = logo;  // ou base64: 'data:image/png;base64,...'
+  // Carregar o logotipo
+  const logoPath = logo;  
   
   // Obter o tamanho da página
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  const marginBottom = 10; // Espaço inferior para evitar que o conteúdo ultrapasse os limites da página
+  const marginBottom = 10; 
   
   // Definir o tamanho do logotipo
-  const logoWidth = 43;  // Ajuste a largura do logotipo
-  const logoHeight = 25; // Ajuste a altura do logotipo
+  const logoWidth = 43;  
+  const logoHeight = 25; 
   
-  // Calcular a posição X para centralizar o logotipo
+ 
   const logoX = 10;
-  const logoY = 10;  // Manter o logotipo no topo da página
+  const logoY = 10;  
 
   // Adicionar logotipo no topo, centralizado
   doc.addImage(logo, 'PNG', logoX, logoY, logoWidth, logoHeight);
@@ -125,7 +125,7 @@ const AllSurveys = () => {
   doc.setFont('helvetica', 'bold');
   const title = "Informações da Entrevista";
   const titleWidth = doc.getTextWidth(title);
-  doc.text(title, (pageWidth - titleWidth) / 2, 40);  // Ajustado para considerar o espaço do logotipo
+  doc.text(title, (pageWidth - titleWidth) / 2, 40);  
 
   // ID da Entrevista abaixo do título
   doc.setFontSize(14);
@@ -135,7 +135,7 @@ const AllSurveys = () => {
   doc.text(idText, (pageWidth - idWidth) / 2, 50);  // Ajustado para considerar o espaço do título
 
   // Informações do Entrevistador e Entrevistado
-  let yPosition = 70;  // A partir de 70 para dar espaço após o ID
+  let yPosition = 70; 
   const marginLeft = 14;
   const marginRight = pageWidth / 2 + 10;
 
@@ -181,11 +181,11 @@ const AllSurveys = () => {
   // Detalhes das perguntas
   yPosition += 20;
   survey.surveyDetails.forEach((question, index) => {
-    // Verificar se o próximo conteúdo ultrapassará o limite inferior da página
-    const nextYPosition = yPosition + 40; // Aproximadamente a altura das perguntas
+    
+    const nextYPosition = yPosition + 40; 
     if (nextYPosition > pageHeight - marginBottom) {
-      doc.addPage(); // Adicionar uma nova página
-      yPosition = 20; // Reiniciar a posição na nova página
+      doc.addPage(); 
+      yPosition = 20; 
     }
 
     // Título da pergunta
@@ -201,41 +201,54 @@ const AllSurveys = () => {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     const questionText = question.Pergunta || 'Pergunta não disponível';
-    const questionTextHeight = doc.getTextWidth(questionText) > 180 ? 20 : 10; // Ajusta o espaço com base no tamanho do texto
-    doc.text(questionText, marginLeft, yPosition, { maxWidth: 180 });
-    yPosition += questionTextHeight;
+    
+    // Quebra automática de texto
+    const questionLines = doc.splitTextToSize(questionText, 180); 
+    doc.text(questionLines, marginLeft, yPosition);
+    yPosition += 6 * questionLines.length; 
 
     // Resposta
     doc.setFont('helvetica', 'normal');
-    doc.text(`Resposta: ${question.Resposta || 'Não disponível'}`, marginLeft, yPosition, { maxWidth: 180 });
-    yPosition += 6; // Resposta sem espaçamento adicional
+    const responseText = `Resposta: ${question.Resposta || 'Não disponível'}`;
+    const responseLines = doc.splitTextToSize(responseText, 180);
+    doc.text(responseLines, marginLeft, yPosition);
+    yPosition += 6 * responseLines.length;
 
     // Comentários
-    doc.text(`Comentários: ${question.Comentarios || 'Não disponível'}`, marginLeft, yPosition, { maxWidth: 180 });
-    yPosition += 6;
+    const commentsText = `Comentários: ${question.Comentarios || 'Não disponível'}`;
+    const commentsLines = doc.splitTextToSize(commentsText, 180);
+    doc.text(commentsLines, marginLeft, yPosition);
+    yPosition += 6 * commentsLines.length;
 
     // Índice da Pergunta
-    doc.text(`Índice Pergunta: ${question.Indice_Pergunta || 'Não disponível'}`, marginLeft, yPosition, { maxWidth: 180 });
-    yPosition += 6;
+    const indexText = `Índice Pergunta: ${question.Indice_Pergunta || 'Não disponível'}`;
+    const indexLines = doc.splitTextToSize(indexText, 180);
+    doc.text(indexLines, marginLeft, yPosition);
+    yPosition += 6 * indexLines.length;
 
     // Âmbito
-    doc.text(`Âmbito: ${question.Ambito || 'Nenhum comentário'}`, marginLeft, yPosition, { maxWidth: 180 });
-    yPosition += 6;
+    const scopeText = `Âmbito: ${question.Ambito || 'Nenhum comentário'}`;
+    const scopeLines = doc.splitTextToSize(scopeText, 180);
+    doc.text(scopeLines, marginLeft, yPosition);
+    yPosition += 6 * scopeLines.length;
 
     // Normas Aplicáveis
-    doc.text(`Normas Aplicáveis: ${question.Normas_aplicaveis || 'Nenhum comentário'}`, marginLeft, yPosition, { maxWidth: 180 });
-    yPosition += 10;
+    const normsText = `Normas Aplicáveis: ${question.Normas_aplicaveis || 'Nenhum comentário'}`;
+    const normsLines = doc.splitTextToSize(normsText, 180);
+    doc.text(normsLines, marginLeft, yPosition);
+    yPosition += 6 * normsLines.length;
 
     // Adicionar nova página se necessário
-    const nextPositionCheck = yPosition + 10; // Verifique se a próxima posição vai ultrapassar a página
+    const nextPositionCheck = yPosition + 10; 
     if (nextPositionCheck > pageHeight - marginBottom) {
       doc.addPage();
-      yPosition = 20; // Reiniciar a posição para a nova página
+      yPosition = 20; 
     }
   });
 
   return doc.output('arraybuffer');
 };
+
 
 
 // Gera o ZIP e força o download
@@ -277,7 +290,7 @@ const generateZIP = async (surveyData) => {
 
   // Gera o arquivo ZIP como um blob
   zip.generateAsync({ type: 'blob' }).then((content) => {
-    // Força o download do arquivo ZIP
+    
     const link = document.createElement('a');
     link.href = URL.createObjectURL(content);
     link.download = `Questionário - ${surveyData.entrevistadorName} - ${surveyData.entrevistadoName}.zip`;
@@ -306,10 +319,10 @@ const generateZIP = async (surveyData) => {
 
   return (
     <div>
-      {/* Botão para redirecionar à página de UserInfo */}
+      
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <button className='back-home' onClick={() => navigate('/')}>
-          Voltar para Página Inicial
+          Voltar para a Página Inicial
         </button>
       </div>
   
