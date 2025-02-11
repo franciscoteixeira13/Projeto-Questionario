@@ -97,7 +97,7 @@ const UserInfo = ({ setUserInfo }) => {
         <form onSubmit={handleSubmit}>
             
             <div className='redirect-div'>
-                <button className='questionario-button' type="button" onClick={handleRedirectQuestionario}>Visualizar Entrevistas</button>
+                <button className='questionario-button' type="button" onClick={handleRedirectQuestionario}>Ver Entrevistas</button>
                 <button className='file-upload-button' type='button' onClick={handleRedirectFileUpload}>Carregar Ficheiro</button>
             </div>
 

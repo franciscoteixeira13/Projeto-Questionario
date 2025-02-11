@@ -419,7 +419,10 @@ app.delete('/api/delete-survey/:id', (req, res) => {
 
 
 app.post('/api/reset-file', (req, res) => {
-    const publicDir = path.join(__dirname, '../public');
+    const publicDir = path.join(__dirname, 'my-app/public');
+
+    console.log('Diretório Public: ',publicDir);
+
     const targetDir = path.join(publicDir, 'ficheiro-excel');
 
    
@@ -439,7 +442,8 @@ app.post('/api/reset-file', (req, res) => {
         if (excelFiles.length === 0) {
             return res.status(404).json({ error: 'Nenhum arquivo Excel encontrado na pasta public.' });
         }
-
+        console.log('número de ficheiros excel encontrados na pasta public: ', excelFiles.length)
+        
         const firstExcelFile = excelFiles[0];
         const originalFilePath = path.join(publicDir, firstExcelFile);
         const duplicatedFilePath = path.join(targetDir, firstExcelFile);
